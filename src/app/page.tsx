@@ -1,60 +1,26 @@
-import Featured from "@/components/Featured";
+import { FilterProvider } from "@/components/FilterProvider";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
-import ProductExplorer from "@/components/ProductExplorer";
+import ProductGrid from "@/components/ProductGrid";
 import Reveal from "@/components/Reveal";
-import { products } from "@/lib/products";
+import Sidebar from "@/components/Sidebar";
 
 export default function Home() {
   return (
-    <>
-      <SiteHeader />
-      <main className="flex-1">
-        <Hero />
-        <Marquee />
-        <Featured />
-        <ProductExplorer products={products} />
-        <Methodology />
-      </main>
-      <SiteFooter />
-    </>
-  );
-}
-
-function SiteHeader() {
-  return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/75 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 lg:px-12">
-        <a
-          href="#top"
-          className="group flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          <span
-            aria-hidden="true"
-            className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-serif text-sm font-bold text-on-primary transition-transform duration-300 group-hover:rotate-[8deg]"
-          >
-            R
-          </span>
-          <span className="font-serif text-base font-semibold tracking-tight">
-            AI Employee Research
-          </span>
-        </a>
-        <nav className="hidden items-center gap-7 text-sm text-secondary md:flex">
-          <a href="#featured" className="transition-colors hover:text-foreground">
-            精选
-          </a>
-          <a href="#products" className="transition-colors hover:text-foreground">
-            产品列表
-          </a>
-          <a href="#methodology" className="transition-colors hover:text-foreground">
-            方法论
-          </a>
-          <a href="#about" className="transition-colors hover:text-foreground">
-            关于
-          </a>
-        </nav>
+    <FilterProvider>
+      <div className="min-h-screen">
+        <Sidebar />
+        <div className="lg:ml-[280px]">
+          <main className="flex flex-col">
+            <Hero />
+            <Marquee />
+            <ProductGrid />
+            <Methodology />
+            <SiteFooter />
+          </main>
+        </div>
       </div>
-    </header>
+    </FilterProvider>
   );
 }
 
@@ -87,13 +53,12 @@ function Methodology() {
       id="methodology"
       className="relative isolate overflow-hidden border-t border-border bg-muted/40"
     >
-      {/* subtle grid background */}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-grid bg-grid-mask opacity-60"
       />
 
-      <div className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-12 lg:py-32">
+      <div className="px-6 py-20 lg:px-12 lg:py-24">
         <div className="grid grid-cols-12 gap-8">
           <div className="col-span-12 lg:col-span-5">
             <Reveal>
@@ -145,71 +110,9 @@ function Methodology() {
 
 function SiteFooter() {
   return (
-    <footer id="about" className="border-t border-border bg-background">
-      <div className="mx-auto w-full max-w-7xl px-6 py-16 lg:px-12">
-        <div className="grid grid-cols-12 gap-8">
-          <div className="col-span-12 sm:col-span-6">
-            <div className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-serif text-sm font-bold text-on-primary"
-              >
-                R
-              </span>
-              <p className="font-serif text-xl font-semibold tracking-tight">
-                AI Employee Research
-              </p>
-            </div>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-              An ongoing audit of AI Employee &amp; Agent products. 持续更新中。
-            </p>
-          </div>
-
-          <div className="col-span-6 sm:col-span-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              导航
-            </p>
-            <ul className="mt-4 flex flex-col gap-2 text-sm">
-              <li>
-                <a
-                  href="#featured"
-                  className="text-secondary transition-colors hover:text-foreground"
-                >
-                  精选
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#products"
-                  className="text-secondary transition-colors hover:text-foreground"
-                >
-                  产品列表
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#methodology"
-                  className="text-secondary transition-colors hover:text-foreground"
-                >
-                  方法论
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="col-span-6 sm:col-span-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              档案
-            </p>
-            <ul className="mt-4 flex flex-col gap-2 text-sm">
-              <li className="text-secondary">v0.1 · 2026-05-25</li>
-              <li className="text-muted-foreground">22 款产品</li>
-              <li className="text-muted-foreground">6 个垂类</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border pt-6 sm:flex-row sm:items-center">
+    <footer className="border-t border-border bg-background">
+      <div className="px-6 py-12 lg:px-12">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} AI Employee Research · Built with Next.js on Vercel
           </p>

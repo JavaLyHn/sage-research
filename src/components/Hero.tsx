@@ -1,10 +1,7 @@
-import AnimatedNumber from "./AnimatedNumber";
-import { stats } from "@/lib/products";
-
 export default function Hero() {
   return (
     <section
-      id="top"
+      id="overview"
       className="relative isolate overflow-hidden border-b border-border"
     >
       {/* background grid */}
@@ -38,10 +35,10 @@ export default function Hero() {
         />
       </div>
 
-      <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 pt-24 pb-20 text-center lg:px-12 lg:pt-32 lg:pb-28">
+      <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 pt-16 pb-16 text-center lg:px-12 lg:pt-20 lg:pb-20">
         <LiveBadge />
 
-        <h1 className="mt-8 font-serif text-[3rem] font-medium leading-[1.02] tracking-tight text-foreground sm:text-7xl lg:text-[6rem]">
+        <h1 className="mt-7 font-serif text-[2.75rem] font-medium leading-[1.04] tracking-tight text-foreground sm:text-6xl lg:text-[4.75rem]">
           看 <em className="italic gradient-text">AI 员工</em>
           <br />
           长 什 么 样。
@@ -67,22 +64,6 @@ export default function Hero() {
             看研究方法
           </a>
         </div>
-
-        {/* Stats strip */}
-        <div className="mt-20 grid w-full grid-cols-2 gap-x-6 gap-y-10 border-t border-border pt-12 sm:grid-cols-4">
-          <StatBig label="收录产品" value={stats.total} bar="bg-foreground" />
-          <StatBig
-            label="已完成"
-            value={stats.completed}
-            bar="bg-emerald-500"
-          />
-          <StatBig
-            label="进行中"
-            value={stats.inProgress}
-            bar="bg-amber-500"
-          />
-          <StatBig label="计划中" value={stats.planned} bar="bg-zinc-400" />
-        </div>
       </div>
     </section>
   );
@@ -98,29 +79,6 @@ function LiveBadge() {
         />
       </span>
       <span>持续更新 · AI 员工 / Agent 产品深度调研</span>
-    </div>
-  );
-}
-
-function StatBig({
-  label,
-  value,
-  bar,
-}: {
-  label: string;
-  value: number;
-  bar: string;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div className={`h-1 w-10 rounded-full ${bar}`} aria-hidden="true" />
-      <AnimatedNumber
-        value={value}
-        className="font-serif text-5xl font-semibold leading-none text-foreground sm:text-6xl"
-      />
-      <span className="text-xs uppercase tracking-widest text-muted-foreground">
-        {label}
-      </span>
     </div>
   );
 }

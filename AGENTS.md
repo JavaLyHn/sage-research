@@ -41,14 +41,20 @@ npm run build    # 上线前本地验证
 ## 4. 目录结构
 
 ```
-my-app/
+ai-employee-research/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx              # 字体 + 元数据 + 根 wrapper
-│   │   ├── page.tsx                # 首页:Header / Hero / Methodology / Footer
-│   │   └── globals.css             # 设计 token (@theme)
+│   │   ├── page.tsx                # 首页:Sidebar + 主区(Hero / Marquee / 表格 / 方法论 / Footer)
+│   │   └── globals.css             # 设计 token (@theme) + 动画 keyframes
 │   ├── components/
-│   │   └── ProductExplorer.tsx     # 'use client' 过滤栏 + 卡片网格
+│   │   ├── FilterProvider.tsx      # 全局筛选状态 context
+│   │   ├── Sidebar.tsx             # 左侧固定目录 + 筛选(280px;移动端 hamburger)
+│   │   ├── Hero.tsx                # 顶部 Hero(网格底纹 + 渐变光球 + 数字滚动)
+│   │   ├── Marquee.tsx             # 横向无缝滚动产品名
+│   │   ├── ProductGrid.tsx         # 产品表格(7→6 列,从 FilterProvider 读筛选结果)
+│   │   ├── AnimatedNumber.tsx      # 入视口数字从 0 缓动到目标
+│   │   └── Reveal.tsx              # 入视口浮现包装器
 │   └── lib/
 │       └── products.ts             # ⭐ 产品数据唯一来源 (SSOT)
 ├── public/                         # 静态资源
@@ -80,15 +86,15 @@ my-app/
    ```ts
    {
      id: "xxx",
-     index: 23,                // 接续编号
+     index: 15,                // 接续编号
      name: "产品名",
      positioning: "一句话定位",
      url: "https://...",
      access: "开放 / 联系销售 / ...",
      owner: "何龙",
-     status: "completed",      // completed | in-progress | planned
+     status: "completed",      // completed | in-progress
      category: "agent",        // 见 ProductCategory 类型
-     reportPath: "23-xxx",     // 对应 audits 文件夹名
+     reportPath: "15-xxx",     // 对应 audits 文件夹名
    }
    ```
 3. `npm run build` 本地验证通过
@@ -104,7 +110,7 @@ my-app/
 ### D. 新增类别 / 状态
 1. `src/lib/products.ts` 扩展 `ProductCategory` / `ProductStatus` 联合类型
 2. 同文件 `CATEGORY_LABEL` / `STATUS_LABEL` 加映射
-3. `ProductExplorer.tsx` 的 `CATEGORIES` / `STATUSES` / `STATUS_DOT` 加选项
+3. `Sidebar.tsx` 的 `CATEGORIES` / `STATUSES` 加选项(同时它会自动按计数过滤掉 0 项)
 
 ## 7. 协作规则
 
@@ -134,6 +140,10 @@ my-app/
 - feat: 首页重做 — 居中 Hero / 网格底纹 + 渐变光球 / Marquee 横向滚动 / 精选 3 卡 / 数字滚动 / 卡片光晕 hover
 - chore: 主域名切换为 `ai-employee-research.vercel.app`(旧的 `my-app-pink-ten-78` 仍可访问)
 - chore: 项目重命名 — 本地目录 / GitHub 仓库 / Vercel 项目全部统一为 `ai-employee-research`,重连 git remote 与 Vercel link
+- refactor: 首页重构为 Dashboard 布局 — 左侧固定 280px Sidebar(导航 + 筛选 + 统计),右侧主区滚动
+- feat: 产品列表从卡片改为表格 — 删 Featured 区(三精选) / 删状态列 / 名称即官网链接 / 移除负责人显示
+- refactor: 数据层只保留 14 款已研产品 — 删除 7 个计划中条目,`ProductStatus` 简化为 completed | in-progress,`ProductCategory` 移除 dev
+- feat: 补录 Octok(15) + The AI CMO(16) 两个产品 — 表格.md 漏列但 audits 文件夹有完整报告。ProductGrid 标题数字改为动态绑定 stats.total
 
 <!--
 追加模板(复制下面这段到「迭代日志」标题下方,删除注释包裹):
