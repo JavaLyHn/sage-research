@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 |---|---|
 | 名称 | AI Employee Research |
 | 性质 | AI 员工 / AI Agent 类产品的深度调研站点(展示层) |
-| 生产地址 | https://my-app-pink-ten-78.vercel.app |
+| 生产地址 | https://ai-employee-research.vercel.app |
 | Vercel 项目 | `ly-hn-s-projects/my-app` |
 | GitHub 仓库 | https://github.com/JavaLyHn/my-vercel |
 | 内容上游 | `/Users/aa00945/Desktop/octok/audits/`(报告与素材,暂未线上托管) |
@@ -131,6 +131,8 @@ my-app/
 - feat: 首页设计完成 — Hero + 22 款产品卡片 + 类别/状态双筛选 + 方法论
 - feat: 接入 GitHub 自动部署(push main 触发)
 - docs: 撰写 AGENTS.md 协作约定
+- feat: 首页重做 — 居中 Hero / 网格底纹 + 渐变光球 / Marquee 横向滚动 / 精选 3 卡 / 数字滚动 / 卡片光晕 hover
+- chore: 主域名切换为 `ai-employee-research.vercel.app`(旧的 `my-app-pink-ten-78` 仍可访问)
 
 <!--
 追加模板(复制下面这段到「迭代日志」标题下方,删除注释包裹):
