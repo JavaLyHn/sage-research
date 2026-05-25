@@ -133,6 +133,7 @@ my-app/
 - docs: 撰写 AGENTS.md 协作约定
 - feat: 首页重做 — 居中 Hero / 网格底纹 + 渐变光球 / Marquee 横向滚动 / 精选 3 卡 / 数字滚动 / 卡片光晕 hover
 - chore: 主域名切换为 `ai-employee-research.vercel.app`(旧的 `my-app-pink-ten-78` 仍可访问)
+- chore: 项目重命名 — 本地目录 / GitHub 仓库 / Vercel 项目全部统一为 `ai-employee-research`,重连 git remote 与 Vercel link
 
 <!--
 追加模板(复制下面这段到「迭代日志」标题下方,删除注释包裹):
