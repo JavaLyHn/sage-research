@@ -50,23 +50,38 @@ export default function ProductExplorer({ products }: { products: Product[] }) {
   );
 
   return (
-    <section id="products" className="mx-auto w-full max-w-7xl px-6 py-16 lg:px-12">
-      <div className="mb-10 flex flex-col gap-8">
+    <section id="products" className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-12">
+      <div className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-accent">
+            产品档案
+          </p>
+          <h2 className="font-serif text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl">
+            22 款产品,逐个解构。
+          </h2>
+        </div>
+        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+          用类别和状态双重筛选,定位你关心的赛道。点击卡片访问产品官网。
+        </p>
+      </div>
+
+      <div className="mb-10 flex flex-col gap-6 rounded-2xl border border-border bg-card p-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
         <FilterRow
           label="类别"
           options={CATEGORIES}
           value={category}
           onChange={setCategory}
         />
+        <div className="h-px bg-border" />
         <FilterRow
           label="状态"
           options={STATUSES}
           value={status}
           onChange={setStatus}
         />
-        <div className="flex items-baseline justify-between border-b border-border pb-4">
+        <div className="flex items-baseline justify-between border-t border-border pt-4">
           <p className="text-sm text-muted-foreground">
-            共 <span className="text-foreground font-bold">{filtered.length}</span> 个产品
+            共 <span className="text-foreground font-bold tabular-nums">{filtered.length}</span> 个产品
           </p>
           {(category !== "all" || status !== "all") && (
             <button
@@ -141,29 +156,35 @@ function ProductCard({ product }: { product: Product }) {
   const reportDisabled = !product.reportPath || product.status === "planned";
 
   return (
-    <article className="group relative flex flex-col rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-foreground hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-      <div className="mb-4 flex items-start justify-between">
-        <span className="font-serif text-3xl font-medium tabular-nums text-muted-foreground">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-1.5 hover:border-foreground hover:shadow-[0_18px_40px_-12px_rgba(0,0,0,0.12)]">
+      {/* hover accent glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-20 -right-16 h-40 w-40 rounded-full bg-accent/0 blur-2xl transition-all duration-700 group-hover:bg-accent/12"
+      />
+
+      <div className="relative mb-4 flex items-start justify-between">
+        <span className="font-serif text-3xl font-medium tabular-nums text-muted-foreground transition-colors duration-300 group-hover:text-accent">
           {String(product.index).padStart(2, "0")}
         </span>
         <StatusBadge status={product.status} />
       </div>
 
-      <h3 className="font-serif text-2xl font-semibold leading-tight tracking-tight text-foreground">
+      <h3 className="relative font-serif text-2xl font-semibold leading-tight tracking-tight text-foreground">
         {product.name}
       </h3>
 
-      <p className="mt-2 text-sm leading-relaxed text-secondary line-clamp-2">
+      <p className="relative mt-2 text-sm leading-relaxed text-secondary line-clamp-2">
         {product.positioning}
       </p>
 
       {product.note && (
-        <p className="mt-3 rounded-md border-l-2 border-accent bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+        <p className="relative mt-3 rounded-md border-l-2 border-accent bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
           {product.note}
         </p>
       )}
 
-      <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
+      <div className="relative mt-5 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-md bg-muted px-2 py-1 font-medium text-secondary">
           {CATEGORY_LABEL[product.category]}
         </span>
@@ -177,7 +198,7 @@ function ProductCard({ product }: { product: Product }) {
         )}
       </div>
 
-      <div className="mt-6 flex items-center gap-2 border-t border-border pt-4">
+      <div className="relative mt-6 flex items-center gap-2 border-t border-border pt-4">
         <a
           href={product.url}
           target="_blank"
