@@ -13,6 +13,14 @@ type ModalState =
   | { open: true; mode: "create"; product: null }
   | { open: true; mode: "edit"; product: Product };
 
+interface DragState {
+  fromId: string | null;
+  overId: string | null;
+  position: "before" | "after" | null;
+}
+
+const EMPTY_DRAG: DragState = { fromId: null, overId: null, position: null };
+
 export default function ProductGrid() {
   const {
     filtered,
@@ -23,10 +31,14 @@ export default function ProductGrid() {
     addProduct,
     updateProduct,
     deleteProduct,
+    moveProduct,
     resetToDefaults,
   } = useFilter();
 
   const [modal, setModal] = useState<ModalState>({ open: false });
+  const [drag, setDrag] = useState<DragState>(EMPTY_DRAG);
+
+  const draggable = !isFiltered;
 
   const openCreate = () => setModal({ open: true, mode: "create", product: null });
   const openEdit = (p: Product) =>
@@ -54,6 +66,36 @@ export default function ProductGrid() {
     }
   };
 
+  // Drag handlers
+  const onDragStart = (id: string) => (e: React.DragEvent<HTMLTableRowElement>) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+    setDrag({ fromId: id, overId: null, position: null });
+  };
+
+  const onDragOver =
+    (id: string) => (e: React.DragEvent<HTMLTableRowElement>) => {
+      if (!drag.fromId || drag.fromId === id) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const rect = e.currentTarget.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const position: "before" | "after" = e.clientY < midY ? "before" : "after";
+      if (drag.overId !== id || drag.position !== position) {
+        setDrag((s) => ({ ...s, overId: id, position }));
+      }
+    };
+
+  const onDrop = (id: string) => (e: React.DragEvent<HTMLTableRowElement>) => {
+    e.preventDefault();
+    if (drag.fromId && drag.fromId !== id && drag.position) {
+      moveProduct(drag.fromId, id, drag.position);
+    }
+    setDrag(EMPTY_DRAG);
+  };
+
+  const onDragEnd = () => setDrag(EMPTY_DRAG);
+
   return (
     <section id="products" className="px-6 py-16 lg:px-12 lg:py-20">
       <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
@@ -77,14 +119,26 @@ export default function ProductGrid() {
 
       {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={openCreate}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-[0_4px_14px_-4px_rgba(0,0,0,0.3)] transition-all hover:opacity-90 hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
-        >
-          <PlusIcon className="h-3.5 w-3.5" />
-          新增产品
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={openCreate}
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-[0_4px_14px_-4px_rgba(0,0,0,0.3)] transition-all hover:opacity-90 hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+            新增产品
+          </button>
+          {!draggable && filtered.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              ⓘ 清除筛选后可拖动排序
+            </span>
+          )}
+          {draggable && filtered.length > 1 && (
+            <span className="text-xs text-muted-foreground">
+              ⓘ 拖动行可调整顺序
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={handleReset}
@@ -116,7 +170,7 @@ export default function ProductGrid() {
             <table className="w-full min-w-[760px] border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <Th className="w-14 text-center">#</Th>
+                  <Th className={draggable ? "w-20 text-center" : "w-14 text-center"}>#</Th>
                   <Th className="w-48">产品</Th>
                   <Th>定位</Th>
                   <Th className="w-32">类别</Th>
@@ -129,6 +183,12 @@ export default function ProductGrid() {
                   <ProductRow
                     key={p.id}
                     product={p}
+                    draggable={draggable}
+                    drag={drag}
+                    onDragStart={onDragStart(p.id)}
+                    onDragOver={onDragOver(p.id)}
+                    onDrop={onDrop(p.id)}
+                    onDragEnd={onDragEnd}
                     onEdit={() => openEdit(p)}
                     onDelete={() => handleDelete(p)}
                   />
@@ -169,21 +229,62 @@ function Th({
 
 function ProductRow({
   product,
+  draggable,
+  drag,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
   onEdit,
   onDelete,
 }: {
   product: Product;
+  draggable: boolean;
+  drag: DragState;
+  onDragStart: (e: React.DragEvent<HTMLTableRowElement>) => void;
+  onDragOver: (e: React.DragEvent<HTMLTableRowElement>) => void;
+  onDrop: (e: React.DragEvent<HTMLTableRowElement>) => void;
+  onDragEnd: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
   const reportDisabled = !product.reportPath;
+  const isSource = drag.fromId === product.id;
+  const isOverBefore = drag.overId === product.id && drag.position === "before";
+  const isOverAfter = drag.overId === product.id && drag.position === "after";
+
+  const dropIndicatorClass = isOverBefore
+    ? "shadow-[inset_0_2px_0_var(--accent)]"
+    : isOverAfter
+      ? "shadow-[inset_0_-2px_0_var(--accent)]"
+      : "";
 
   return (
-    <tr className="group transition-colors duration-150 hover:bg-muted/40">
+    <tr
+      draggable={draggable}
+      onDragStart={draggable ? onDragStart : undefined}
+      onDragOver={draggable ? onDragOver : undefined}
+      onDrop={draggable ? onDrop : undefined}
+      onDragEnd={draggable ? onDragEnd : undefined}
+      className={`group transition-all duration-150 hover:bg-muted/40 ${
+        isSource ? "opacity-40" : ""
+      } ${dropIndicatorClass}`}
+    >
       <Td className="text-center">
-        <span className="font-serif text-base font-medium tabular-nums text-muted-foreground transition-colors duration-200 group-hover:text-accent">
-          {String(product.index).padStart(2, "0")}
-        </span>
+        <div className="flex items-center justify-center gap-1.5">
+          {draggable && (
+            <span
+              aria-hidden="true"
+              className="cursor-grab text-muted-foreground opacity-0 transition-opacity group-hover:opacity-70 active:cursor-grabbing active:opacity-100"
+              title="拖动调整顺序"
+            >
+              <GripIcon className="h-3.5 w-3.5" />
+            </span>
+          )}
+          <span className="font-serif text-base font-medium tabular-nums text-muted-foreground transition-colors duration-200 group-hover:text-accent">
+            {String(product.index).padStart(2, "0")}
+          </span>
+        </div>
       </Td>
 
       <Td>
@@ -191,6 +292,8 @@ function ProductRow({
           href={product.url}
           target="_blank"
           rel="noopener noreferrer"
+          draggable={false}
+          onClick={(e) => e.stopPropagation()}
           className="group/name inline-flex items-center gap-1.5 font-serif text-base font-semibold text-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
         >
           {product.name}
@@ -381,6 +484,24 @@ function TrashIcon({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+function GripIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="6" r="1.5" />
+      <circle cx="9" cy="12" r="1.5" />
+      <circle cx="9" cy="18" r="1.5" />
+      <circle cx="15" cy="6" r="1.5" />
+      <circle cx="15" cy="12" r="1.5" />
+      <circle cx="15" cy="18" r="1.5" />
     </svg>
   );
 }

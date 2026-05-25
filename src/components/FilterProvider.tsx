@@ -33,6 +33,7 @@ interface FilterContextValue {
   addProduct: (input: Omit<Product, "id" | "index">) => void;
   updateProduct: (id: string, patch: Partial<Omit<Product, "id">>) => void;
   deleteProduct: (id: string) => void;
+  moveProduct: (fromId: string, toId: string, position: "before" | "after") => void;
   resetToDefaults: () => void;
 }
 
@@ -85,14 +86,15 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setCategory("all"), []);
 
+  const renumber = (list: Product[]): Product[] =>
+    list.map((p, i) => ({ ...p, index: i + 1 }));
+
   const addProduct = useCallback(
     (input: Omit<Product, "id" | "index">) => {
       setProducts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
-        const nextIndex =
-          prev.reduce((max, p) => (p.index > max ? p.index : max), 0) + 1;
         const id = slugifyId(input.name, existingIds);
-        return [...prev, { ...input, id, index: nextIndex }];
+        return renumber([...prev, { ...input, id, index: prev.length + 1 }]);
       });
     },
     [],
@@ -108,8 +110,27 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   );
 
   const deleteProduct = useCallback((id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    setProducts((prev) => renumber(prev.filter((p) => p.id !== id)));
   }, []);
+
+  const moveProduct = useCallback(
+    (fromId: string, toId: string, position: "before" | "after") => {
+      if (fromId === toId) return;
+      setProducts((prev) => {
+        const fromIdx = prev.findIndex((p) => p.id === fromId);
+        const toIdx = prev.findIndex((p) => p.id === toId);
+        if (fromIdx === -1 || toIdx === -1) return prev;
+        const next = [...prev];
+        const [moved] = next.splice(fromIdx, 1);
+        // Recompute toIdx if it shifted from removing the source
+        let targetIdx = next.findIndex((p) => p.id === toId);
+        if (position === "after") targetIdx += 1;
+        next.splice(targetIdx, 0, moved);
+        return renumber(next);
+      });
+    },
+    [],
+  );
 
   const resetToDefaults = useCallback(() => {
     setProducts(INITIAL_PRODUCTS);
@@ -145,6 +166,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     addProduct,
     updateProduct,
     deleteProduct,
+    moveProduct,
     resetToDefaults,
   };
 
