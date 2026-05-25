@@ -1,12 +1,18 @@
-import { products, CATEGORY_LABEL } from "@/lib/products";
+"use client";
+
+import { CATEGORY_LABEL, type Product } from "@/lib/products";
+import { useFilter } from "./FilterProvider";
 
 export default function Marquee() {
+  const { products } = useFilter();
+
+  if (products.length === 0) return null;
+
   return (
     <section
       aria-label="所有产品快速浏览"
       className="marquee group relative overflow-hidden border-b border-border bg-card/40 py-5"
     >
-      {/* fade edges */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent"
@@ -17,14 +23,20 @@ export default function Marquee() {
       />
 
       <div className="marquee-track flex w-max">
-        <MarqueeRow />
-        <MarqueeRow ariaHidden />
+        <MarqueeRow products={products} />
+        <MarqueeRow products={products} ariaHidden />
       </div>
     </section>
   );
 }
 
-function MarqueeRow({ ariaHidden = false }: { ariaHidden?: boolean }) {
+function MarqueeRow({
+  products,
+  ariaHidden = false,
+}: {
+  products: Product[];
+  ariaHidden?: boolean;
+}) {
   return (
     <ul
       aria-hidden={ariaHidden || undefined}
