@@ -48,15 +48,23 @@ ai-employee-research/
 │   │   ├── page.tsx                # 首页:Sidebar + 主区(Hero / Marquee / 表格 / 方法论 / Footer)
 │   │   └── globals.css             # 设计 token (@theme) + 动画 keyframes
 │   ├── components/
-│   │   ├── FilterProvider.tsx      # 全局筛选状态 context
-│   │   ├── Sidebar.tsx             # 左侧固定目录 + 筛选(280px;移动端 hamburger)
-│   │   ├── Hero.tsx                # 顶部 Hero(网格底纹 + 渐变光球 + 数字滚动)
+│   │   ├── FilterProvider.tsx      # 全局筛选 + CRUD + 拖拽 context(含 localStorage 持久化)
+│   │   ├── Sidebar.tsx             # 左侧固定目录 + 类别筛选(280px;移动端 hamburger)
+│   │   ├── Hero.tsx                # 顶部 Hero(网格底纹 + 渐变光球)
 │   │   ├── Marquee.tsx             # 横向无缝滚动产品名
-│   │   ├── ProductGrid.tsx         # 产品表格(7→6 列,从 FilterProvider 读筛选结果)
-│   │   ├── AnimatedNumber.tsx      # 入视口数字从 0 缓动到目标
+│   │   ├── ProductGrid.tsx         # 产品表格(增删改查 + HTML5 拖拽排序)
+│   │   ├── ProductFormModal.tsx    # 新增/编辑表单 modal
+│   │   ├── AnimatedNumber.tsx      # 入视口数字缓动(目前未使用,保留)
 │   │   └── Reveal.tsx              # 入视口浮现包装器
 │   └── lib/
-│       └── products.ts             # ⭐ 产品数据唯一来源 (SSOT)
+│       └── products.ts             # ⭐ 产品初始数据(运行时改动走 localStorage)
+├── audits/                         # 📁 16 款产品的体验报告归档(MD + HTML)
+│   ├── 01-artisan-co/
+│   │   ├── report.md
+│   │   └── report.html             # HTML 已内联截图,~5-16MB/份
+│   ├── 02-kuse-ai/ ... 16-theaicmo-com/
+│   ├── README.md / 表格.md / _competitors_summary.md
+│   └── (注:HTML 暂未托管到线上,只在 git 存档)
 ├── public/                         # 静态资源
 └── AGENTS.md                       # 本文件
 ```
@@ -144,6 +152,9 @@ ai-employee-research/
 - feat: 产品列表从卡片改为表格 — 删 Featured 区(三精选) / 删状态列 / 名称即官网链接 / 移除负责人显示
 - refactor: 数据层只保留 14 款已研产品 — 删除 7 个计划中条目,`ProductStatus` 简化为 completed | in-progress,`ProductCategory` 移除 dev
 - feat: 补录 Octok(15) + The AI CMO(16) 两个产品 — 表格.md 漏列但 audits 文件夹有完整报告。ProductGrid 标题数字改为动态绑定 stats.total
+- feat: 产品 CRUD — 新增 modal / 行内编辑/删除 / 一键重置 / localStorage 持久化(仅浏览器本地)
+- feat: 表格支持 HTML5 原生拖拽排序,上下吸附指示线,自动重排 index
+- chore: 上传 16 款产品的 audits 报告归档(MD+HTML,~101MB)到同仓库 `audits/` 目录
 
 <!--
 追加模板(复制下面这段到「迭代日志」标题下方,删除注释包裹):
