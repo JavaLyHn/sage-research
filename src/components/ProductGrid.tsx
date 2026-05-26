@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   CATEGORY_LABEL,
@@ -298,18 +299,16 @@ function ProductRow({
               <ArrowRight className="h-3 w-3" />
             </button>
           ) : (
-            <a
-              href={`/products/${product.reportPath}/report.html`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/products/${product.reportPath}`}
               draggable={false}
               onClick={(e) => e.stopPropagation()}
               aria-label={`查看 ${product.name} 报告`}
               className="ml-1 inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               查看报告
-              <ArrowUpRight className="h-3 w-3" />
-            </a>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           )}
         </div>
       </Td>
