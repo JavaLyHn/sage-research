@@ -74,26 +74,6 @@ export default async function ReportViewerPage({ params }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href={product.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            访问产品
-            <ArrowUpRight className="h-3 w-3" />
-          </a>
-          <a
-            href={`/products/${slug}/report.html`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            原版 HTML
-            <ArrowUpRight className="h-3 w-3" />
-          </a>
-        </div>
       </header>
 
       {/* Mobile product name (header太挤时单独一行) */}
@@ -134,19 +114,3 @@ function ArrowLeft({ className }: { className?: string }) {
   );
 }
 
-function ArrowUpRight({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M7 17L17 7M9 7h8v8" />
-    </svg>
-  );
-}
