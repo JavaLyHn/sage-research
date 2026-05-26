@@ -54,7 +54,14 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw) as Product[];
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setProducts(parsed);
+          // v1.20 migration: 旧 reportPath 带 "0X-" 数字前缀(如 "01-artisan-co"),
+          // 文件夹改名后剥掉前缀(→ "artisan-co")。新增产品的自定义路径不受影响。
+          const migrated = parsed.map((p) =>
+            p.reportPath
+              ? { ...p, reportPath: p.reportPath.replace(/^\d+-/, "") }
+              : p,
+          );
+          setProducts(migrated);
         }
       }
     } catch {
