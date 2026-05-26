@@ -58,14 +58,16 @@ ai-employee-research/
 │   │   └── Reveal.tsx              # 入视口浮现包装器
 │   └── lib/
 │       └── products.ts             # ⭐ 产品初始数据(运行时改动走 localStorage)
-├── audits/                         # 📁 16 款产品的体验报告归档(MD + HTML)
-│   ├── 01-artisan-co/
-│   │   ├── report.md
-│   │   └── report.html             # HTML 已内联截图,~5-16MB/份
-│   ├── 02-kuse-ai/ ... 16-theaicmo-com/
-│   ├── README.md / 表格.md / _competitors_summary.md
-│   └── (注:HTML 暂未托管到线上,只在 git 存档)
-├── public/                         # 静态资源
+├── audits/                         # 📁 元文档(README / 表格 / 竞品总结),报告产物已迁出
+│   ├── README.md
+│   ├── 表格.md
+│   └── _competitors_summary.md
+├── public/
+│   └── products/                   # 📁 16 款产品的报告(线上可访问,Vercel 静态托管)
+│       ├── 01-artisan-co/
+│       │   ├── report.md
+│       │   └── report.html         # HTML 已内联截图,~5-16MB/份
+│       └── 02-kuse-ai/ ... 16-theaicmo-com/
 └── AGENTS.md                       # 本文件
 ```
 
@@ -155,6 +157,9 @@ ai-employee-research/
 - feat: 产品 CRUD — 新增 modal / 行内编辑/删除 / 一键重置 / localStorage 持久化(仅浏览器本地)
 - feat: 表格支持 HTML5 原生拖拽排序,上下吸附指示线,自动重排 index
 - chore: 上传 16 款产品的 audits 报告归档(MD+HTML,~101MB)到同仓库 `audits/` 目录
+- refactor: 路由拆分 — `/` 只显 Hero,`/products` 独立页(表格 + 方法论);Sidebar 类别筛选只在 /products 显示
+- refactor: 删除产品编辑功能 / 横向滚动 Marquee / 方法论独立入口,简化为新增 + 删除 + 拖动排序
+- feat: 接通「查看报告」按钮 — audits/* 迁到 `public/products/`,链接到 `/products/{reportPath}/report.html`,新标签页打开
 
 <!--
 追加模板(复制下面这段到「迭代日志」标题下方,删除注释包裹):

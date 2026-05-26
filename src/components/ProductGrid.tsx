@@ -18,11 +18,7 @@ const EMPTY_DRAG: DragState = { fromId: null, overId: null, position: null };
 
 export default function ProductGrid() {
   const {
-    filtered,
     products,
-    isFiltered,
-    clear,
-    category,
     addProduct,
     deleteProduct,
     moveProduct,
@@ -31,8 +27,6 @@ export default function ProductGrid() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [drag, setDrag] = useState<DragState>(EMPTY_DRAG);
-
-  const draggable = !isFiltered;
 
   const openCreate = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -95,14 +89,9 @@ export default function ProductGrid() {
             {products.length} 款产品收录,逐个解构。
           </h2>
         </div>
-        <div className="flex flex-wrap items-baseline gap-3">
-          {isFiltered && (
-            <ActiveFilterChips category={category} onClear={clear} />
-          )}
-          <p className="text-sm text-muted-foreground">
-            匹配 <span className="font-bold text-foreground tabular-nums">{filtered.length}</span> 个
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          共 <span className="font-bold text-foreground tabular-nums">{products.length}</span> 款
+        </p>
       </div>
 
       {/* Toolbar */}
@@ -116,12 +105,7 @@ export default function ProductGrid() {
             <PlusIcon className="h-3.5 w-3.5" />
             新增产品
           </button>
-          {!draggable && filtered.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              ⓘ 清除筛选后可拖动排序
-            </span>
-          )}
-          {draggable && filtered.length > 1 && (
+          {products.length > 1 && (
             <span className="text-xs text-muted-foreground">
               ⓘ 拖动行可调整顺序
             </span>
@@ -137,20 +121,11 @@ export default function ProductGrid() {
         </button>
       </div>
 
-      {filtered.length === 0 ? (
+      {products.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 py-20 text-center">
           <p className="text-muted-foreground">
-            {products.length === 0 ? "还没有产品,点上方「新增产品」开始" : "该筛选下没有匹配的产品"}
+            还没有产品,点上方「新增产品」开始
           </p>
-          {isFiltered && (
-            <button
-              type="button"
-              onClick={clear}
-              className="mt-3 text-sm text-accent hover:underline cursor-pointer"
-            >
-              清除筛选
-            </button>
-          )}
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
@@ -158,7 +133,7 @@ export default function ProductGrid() {
             <table className="w-full min-w-[760px] border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <Th className={draggable ? "w-20 text-center" : "w-14 text-center"}>#</Th>
+                  <Th className="w-20 text-center">#</Th>
                   <Th className="w-48">产品</Th>
                   <Th>定位</Th>
                   <Th className="w-32">类别</Th>
@@ -167,11 +142,10 @@ export default function ProductGrid() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((p) => (
+                {products.map((p) => (
                   <ProductRow
                     key={p.id}
                     product={p}
-                    draggable={draggable}
                     drag={drag}
                     onDragStart={onDragStart(p.id)}
                     onDragOver={onDragOver(p.id)}
@@ -214,7 +188,6 @@ function Th({
 
 function ProductRow({
   product,
-  draggable,
   drag,
   onDragStart,
   onDragOver,
@@ -223,7 +196,6 @@ function ProductRow({
   onDelete,
 }: {
   product: Product;
-  draggable: boolean;
   drag: DragState;
   onDragStart: (e: React.DragEvent<HTMLTableRowElement>) => void;
   onDragOver: (e: React.DragEvent<HTMLTableRowElement>) => void;
@@ -244,26 +216,24 @@ function ProductRow({
 
   return (
     <tr
-      draggable={draggable}
-      onDragStart={draggable ? onDragStart : undefined}
-      onDragOver={draggable ? onDragOver : undefined}
-      onDrop={draggable ? onDrop : undefined}
-      onDragEnd={draggable ? onDragEnd : undefined}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
       className={`group transition-all duration-150 hover:bg-muted/40 ${
         isSource ? "opacity-40" : ""
       } ${dropIndicatorClass}`}
     >
       <Td className="text-center">
         <div className="flex items-center justify-center gap-1.5">
-          {draggable && (
-            <span
-              aria-hidden="true"
-              className="cursor-grab text-muted-foreground opacity-0 transition-opacity group-hover:opacity-70 active:cursor-grabbing active:opacity-100"
-              title="拖动调整顺序"
-            >
-              <GripIcon className="h-3.5 w-3.5" />
-            </span>
-          )}
+          <span
+            aria-hidden="true"
+            className="cursor-grab text-muted-foreground opacity-0 transition-opacity group-hover:opacity-70 active:cursor-grabbing active:opacity-100"
+            title="拖动调整顺序"
+          >
+            <GripIcon className="h-3.5 w-3.5" />
+          </span>
           <span className="font-serif text-base font-medium tabular-nums text-muted-foreground transition-colors duration-200 group-hover:text-accent">
             {String(product.index).padStart(2, "0")}
           </span>
@@ -316,16 +286,31 @@ function ProductRow({
           >
             <TrashIcon className="h-3.5 w-3.5" />
           </button>
-          <button
-            type="button"
-            disabled={reportDisabled}
-            aria-label={`查看 ${product.name} 报告`}
-            title={reportDisabled ? "报告暂未发布" : undefined}
-            className="ml-1 inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
-          >
-            查看报告
-            <ArrowRight className="h-3 w-3" />
-          </button>
+          {reportDisabled ? (
+            <button
+              type="button"
+              disabled
+              aria-label={`${product.name} 报告暂未发布`}
+              title="报告暂未发布"
+              className="ml-1 inline-flex items-center gap-1 rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground cursor-not-allowed"
+            >
+              查看报告
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          ) : (
+            <a
+              href={`/products/${product.reportPath}/report.html`}
+              target="_blank"
+              rel="noopener noreferrer"
+              draggable={false}
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`查看 ${product.name} 报告`}
+              className="ml-1 inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              查看报告
+              <ArrowUpRight className="h-3 w-3" />
+            </a>
+          )}
         </div>
       </Td>
     </tr>
@@ -343,37 +328,6 @@ function Td({
     <td className={`border-b border-border px-4 py-3.5 align-middle ${className}`}>
       {children}
     </td>
-  );
-}
-
-function ActiveFilterChips({
-  category,
-  onClear,
-}: {
-  category: string;
-  onClear: () => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {category !== "all" && (
-        <Chip label={CATEGORY_LABEL[category as keyof typeof CATEGORY_LABEL]} />
-      )}
-      <button
-        type="button"
-        onClick={onClear}
-        className="text-xs text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
-      >
-        清除
-      </button>
-    </div>
-  );
-}
-
-function Chip({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-on-primary">
-      {label}
-    </span>
   );
 }
 

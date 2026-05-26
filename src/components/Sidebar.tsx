@@ -3,11 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  CATEGORY_LABEL,
-  type ProductCategory,
-} from "@/lib/products";
-import { useFilter, type CategoryFilter } from "./FilterProvider";
 
 interface NavItem {
   href: string;
@@ -18,15 +13,6 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "概览", matchPath: "/" },
   { href: "/products", label: "产品档案", matchPath: "/products" },
-];
-
-const CATEGORIES: { value: ProductCategory; label: string }[] = [
-  { value: "sales", label: "销售" },
-  { value: "marketing", label: "营销" },
-  { value: "agent", label: "Agent 协作" },
-  { value: "creative", label: "创意生成" },
-  { value: "data", label: "数据分析" },
-  { value: "dev", label: "AI 开发" },
 ];
 
 export default function Sidebar() {
@@ -80,13 +66,6 @@ export default function Sidebar() {
 }
 
 function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
-  const {
-    category,
-    setCategory,
-    categoryCounts,
-    isFiltered,
-    clear,
-  } = useFilter();
   const pathname = usePathname();
 
   return (
@@ -120,7 +99,9 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
 
       {/* Nav */}
       <nav className="mt-8">
-        <SectionTitle>目录</SectionTitle>
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          目录
+        </h3>
         <ul className="mt-3 flex flex-col gap-px">
           {NAV_ITEMS.map((it) => {
             const active = pathname === it.matchPath;
@@ -152,41 +133,6 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
         </ul>
       </nav>
 
-      {/* Category filter — 仅在产品档案页显示 */}
-      {pathname === "/products" && (
-        <>
-          <FilterGroup title="按类别筛选" className="mt-7">
-            <FilterPill
-              active={category === "all"}
-              onClick={() => setCategory("all")}
-              label="全部"
-              count={Object.values(categoryCounts).reduce((a, b) => a + b, 0)}
-            />
-            {CATEGORIES.filter((c) => (categoryCounts[c.value] ?? 0) > 0).map(
-              (c) => (
-                <FilterPill
-                  key={c.value}
-                  active={category === c.value}
-                  onClick={() => setCategory(c.value as CategoryFilter)}
-                  label={c.label}
-                  count={categoryCounts[c.value] ?? 0}
-                />
-              ),
-            )}
-          </FilterGroup>
-
-          {isFiltered && (
-            <button
-              type="button"
-              onClick={clear}
-              className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:underline cursor-pointer"
-            >
-              清除全部筛选
-            </button>
-          )}
-        </>
-      )}
-
       {/* Footer */}
       <div className="mt-auto pt-8">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -194,77 +140,6 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
         </p>
       </div>
     </div>
-  );
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-      {children}
-    </h3>
-  );
-}
-
-function FilterGroup({
-  title,
-  children,
-  className = "",
-}: {
-  title: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <SectionTitle>{title}</SectionTitle>
-      <ul className="mt-3 flex flex-col gap-1">{children}</ul>
-    </div>
-  );
-}
-
-function FilterPill({
-  active,
-  onClick,
-  label,
-  count,
-  dot,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count: number;
-  dot?: string;
-}) {
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={active}
-        className={`group flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-          active
-            ? "bg-primary text-on-primary"
-            : "text-secondary hover:bg-muted hover:text-foreground"
-        }`}
-      >
-        <span className="flex items-center gap-2">
-          {dot && (
-            <span
-              aria-hidden="true"
-              className={`h-1.5 w-1.5 rounded-full ${dot}`}
-            />
-          )}
-          {label}
-        </span>
-        <span
-          className={`text-[10px] tabular-nums font-medium ${
-            active ? "text-on-primary/70" : "text-muted-foreground"
-          }`}
-        >
-          {count}
-        </span>
-      </button>
-    </li>
   );
 }
 

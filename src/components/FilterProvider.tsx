@@ -5,34 +5,23 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
 import {
   products as INITIAL_PRODUCTS,
   type Product,
-  type ProductCategory,
 } from "@/lib/products";
 
-export type CategoryFilter = "all" | ProductCategory;
-
 interface FilterContextValue {
-  // Data
   products: Product[];
-  filtered: Product[];
-  categoryCounts: Record<ProductCategory, number>;
-
-  // Filter state
-  category: CategoryFilter;
-  setCategory: (v: CategoryFilter) => void;
-  clear: () => void;
-  isFiltered: boolean;
-
-  // CRUD
   addProduct: (input: Omit<Product, "id" | "index">) => void;
   deleteProduct: (id: string) => void;
-  moveProduct: (fromId: string, toId: string, position: "before" | "after") => void;
+  moveProduct: (
+    fromId: string,
+    toId: string,
+    position: "before" | "after",
+  ) => void;
   resetToDefaults: () => void;
 }
 
@@ -52,12 +41,13 @@ function slugifyId(name: string, existing: Set<string>): string {
   return `${base}-${i}`;
 }
 
+const renumber = (list: Product[]): Product[] =>
+  list.map((p, i) => ({ ...p, index: i + 1 }));
+
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [category, setCategory] = useState<CategoryFilter>("all");
   const [hydrated, setHydrated] = useState(false);
 
-  // Load from localStorage once on mount
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -73,7 +63,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     setHydrated(true);
   }, []);
 
-  // Persist on every change (after hydration)
   useEffect(() => {
     if (!hydrated) return;
     try {
@@ -82,11 +71,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       // ignore quota errors
     }
   }, [products, hydrated]);
-
-  const clear = useCallback(() => setCategory("all"), []);
-
-  const renumber = (list: Product[]): Product[] =>
-    list.map((p, i) => ({ ...p, index: i + 1 }));
 
   const addProduct = useCallback(
     (input: Omit<Product, "id" | "index">) => {
@@ -112,7 +96,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         if (fromIdx === -1 || toIdx === -1) return prev;
         const next = [...prev];
         const [moved] = next.splice(fromIdx, 1);
-        // Recompute toIdx if it shifted from removing the source
         let targetIdx = next.findIndex((p) => p.id === toId);
         if (position === "after") targetIdx += 1;
         next.splice(targetIdx, 0, moved);
@@ -131,28 +114,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const filtered = useMemo(
-    () =>
-      products.filter((p) => category === "all" || p.category === category),
-    [products, category],
-  );
-
-  const categoryCounts = useMemo(() => {
-    const acc = {} as Record<ProductCategory, number>;
-    for (const p of products) {
-      acc[p.category] = (acc[p.category] ?? 0) + 1;
-    }
-    return acc;
-  }, [products]);
-
   const value: FilterContextValue = {
     products,
-    filtered,
-    categoryCounts,
-    category,
-    setCategory,
-    clear,
-    isFiltered: category !== "all",
     addProduct,
     deleteProduct,
     moveProduct,

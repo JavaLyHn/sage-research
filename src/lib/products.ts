@@ -47,7 +47,7 @@ export const products: Product[] = [
     owner: "倩倩",
     status: "completed",
     category: "sales",
-    reportPath: "01-artisan-co",
+    reportPath: "artisan-co",
   },
   {
     id: "kuse",
@@ -59,7 +59,7 @@ export const products: Product[] = [
     owner: "倩倩",
     status: "completed",
     category: "agent",
-    reportPath: "02-kuse-ai",
+    reportPath: "kuse-ai",
   },
   {
     id: "junior",
@@ -71,7 +71,7 @@ export const products: Product[] = [
     status: "completed",
     category: "agent",
     note: "与 Kuse 同公司：Kuse 是系统，Junior 是人格化 AI 员工",
-    reportPath: "05-junior-so",
+    reportPath: "junior-so",
   },
   {
     id: "okara",
@@ -83,7 +83,7 @@ export const products: Product[] = [
     owner: "倩倩",
     status: "in-progress",
     category: "marketing",
-    reportPath: "03-okara-ai",
+    reportPath: "okara-ai",
   },
   {
     id: "moxt",
@@ -95,7 +95,7 @@ export const products: Product[] = [
     owner: "倩倩",
     status: "completed",
     category: "agent",
-    reportPath: "06-moxt-ai",
+    reportPath: "moxt-ai",
   },
   {
     id: "monday",
@@ -107,7 +107,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "agent",
-    reportPath: "07-monday-agents",
+    reportPath: "monday-agents",
   },
   {
     id: "jasper",
@@ -119,7 +119,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "marketing",
-    reportPath: "08-jasper-ai",
+    reportPath: "jasper-ai",
   },
   {
     id: "pika",
@@ -131,7 +131,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "creative",
-    reportPath: "04-pika-me",
+    reportPath: "pika-me",
   },
   {
     id: "relevance",
@@ -143,7 +143,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "agent",
-    reportPath: "09-relevanceai-com",
+    reportPath: "relevanceai-com",
   },
   {
     id: "kaito",
@@ -155,7 +155,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "data",
-    reportPath: "10-kaito-ai",
+    reportPath: "kaito-ai",
   },
   {
     id: "serus",
@@ -167,7 +167,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "agent",
-    reportPath: "11-serus-io",
+    reportPath: "serus-io",
   },
   {
     id: "11x",
@@ -179,7 +179,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "sales",
-    reportPath: "12-11x-ai",
+    reportPath: "11x-ai",
   },
   {
     id: "lunar-strategy",
@@ -191,7 +191,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "marketing",
-    reportPath: "13-lunarstrategy-com",
+    reportPath: "lunarstrategy-com",
   },
   {
     id: "onesight",
@@ -203,7 +203,7 @@ export const products: Product[] = [
     owner: "何龙",
     status: "completed",
     category: "marketing",
-    reportPath: "14-onesight-com",
+    reportPath: "onesight-com",
   },
   {
     id: "octok",
@@ -215,7 +215,7 @@ export const products: Product[] = [
     status: "completed",
     category: "agent",
     note: "6 个具名 AI 角色(Navigator/Alice/Sophia/William/Daniel/Ethan)对应出海公司组织架构",
-    reportPath: "15-octok-com",
+    reportPath: "octok-com",
   },
   {
     id: "theaicmo",
@@ -227,7 +227,7 @@ export const products: Product[] = [
     status: "completed",
     category: "marketing",
     note: "plans strategy → writes assets → publishes → learns,定位 agent 而非 prompt 工具",
-    reportPath: "16-theaicmo-com",
+    reportPath: "theaicmo-com",
   },
   {
     id: "qoder",
