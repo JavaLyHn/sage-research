@@ -14,15 +14,9 @@ interface DragState {
 const EMPTY_DRAG: DragState = { fromId: null, overId: null, position: null };
 
 export default function ProductGrid() {
-  const { products, moveProduct, resetToDefaults } = useFilter();
+  const { products, moveProduct } = useFilter();
 
   const [drag, setDrag] = useState<DragState>(EMPTY_DRAG);
-
-  const handleReset = () => {
-    if (window.confirm("重置为初始顺序?你在本浏览器的所有排序改动会丢失。")) {
-      resetToDefaults();
-    }
-  };
 
   // Drag handlers
   const onDragStart = (id: string) => (e: React.DragEvent<HTMLTableRowElement>) => {
@@ -68,18 +62,6 @@ export default function ProductGrid() {
         <p className="text-sm text-muted-foreground">
           共 <span className="font-bold text-foreground tabular-nums">{products.length}</span> 款
         </p>
-      </div>
-
-      {/* Toolbar */}
-      <div className="mb-4 flex justify-end">
-        <button
-          type="button"
-          onClick={handleReset}
-          className="text-xs text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
-          title="清除本地改动,恢复初始数据"
-        >
-          重置为初始数据
-        </button>
       </div>
 
       {products.length === 0 ? (

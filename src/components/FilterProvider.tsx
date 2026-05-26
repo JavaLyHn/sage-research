@@ -20,7 +20,6 @@ interface FilterContextValue {
     toId: string,
     position: "before" | "after",
   ) => void;
-  resetToDefaults: () => void;
 }
 
 const FilterContext = createContext<FilterContextValue | null>(null);
@@ -83,19 +82,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const resetToDefaults = useCallback(() => {
-    setProducts(INITIAL_PRODUCTS);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore
-    }
-  }, []);
-
   const value: FilterContextValue = {
     products,
     moveProduct,
-    resetToDefaults,
   };
 
   return (
