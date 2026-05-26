@@ -8,11 +8,6 @@ import {
 import { useFilter } from "./FilterProvider";
 import ProductFormModal from "./ProductFormModal";
 
-type ModalState =
-  | { open: false }
-  | { open: true; mode: "create"; product: null }
-  | { open: true; mode: "edit"; product: Product };
-
 interface DragState {
   fromId: string | null;
   overId: string | null;
@@ -29,28 +24,21 @@ export default function ProductGrid() {
     clear,
     category,
     addProduct,
-    updateProduct,
     deleteProduct,
     moveProduct,
     resetToDefaults,
   } = useFilter();
 
-  const [modal, setModal] = useState<ModalState>({ open: false });
+  const [modalOpen, setModalOpen] = useState(false);
   const [drag, setDrag] = useState<DragState>(EMPTY_DRAG);
 
   const draggable = !isFiltered;
 
-  const openCreate = () => setModal({ open: true, mode: "create", product: null });
-  const openEdit = (p: Product) =>
-    setModal({ open: true, mode: "edit", product: p });
-  const closeModal = () => setModal({ open: false });
+  const openCreate = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
 
   const handleSubmit = (values: Omit<Product, "id" | "index">) => {
-    if (modal.open && modal.mode === "edit") {
-      updateProduct(modal.product.id, values);
-    } else {
-      addProduct(values);
-    }
+    addProduct(values);
     closeModal();
   };
 
@@ -189,7 +177,6 @@ export default function ProductGrid() {
                     onDragOver={onDragOver(p.id)}
                     onDrop={onDrop(p.id)}
                     onDragEnd={onDragEnd}
-                    onEdit={() => openEdit(p)}
                     onDelete={() => handleDelete(p)}
                   />
                 ))}
@@ -200,9 +187,7 @@ export default function ProductGrid() {
       )}
 
       <ProductFormModal
-        open={modal.open}
-        mode={modal.open ? modal.mode : "create"}
-        initial={modal.open && modal.mode === "edit" ? modal.product : null}
+        open={modalOpen}
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
@@ -235,7 +220,6 @@ function ProductRow({
   onDragOver,
   onDrop,
   onDragEnd,
-  onEdit,
   onDelete,
 }: {
   product: Product;
@@ -245,7 +229,6 @@ function ProductRow({
   onDragOver: (e: React.DragEvent<HTMLTableRowElement>) => void;
   onDrop: (e: React.DragEvent<HTMLTableRowElement>) => void;
   onDragEnd: () => void;
-  onEdit: () => void;
   onDelete: () => void;
 }) {
   const reportDisabled = !product.reportPath;
@@ -324,15 +307,6 @@ function ProductRow({
 
       <Td className="text-right">
         <div className="inline-flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label={`编辑 ${product.name}`}
-            title="编辑"
-            className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card group-hover:opacity-100 cursor-pointer"
-          >
-            <EditIcon className="h-3.5 w-3.5" />
-          </button>
           <button
             type="button"
             onClick={onDelete}
@@ -450,23 +424,6 @@ function PlusIcon({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-function EditIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
     </svg>
   );
 }

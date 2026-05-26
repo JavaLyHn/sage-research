@@ -124,21 +124,6 @@ section[id] {
   mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 30%, transparent 80%);
 }
 
-/* Marquee scroll */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-.marquee-track {
-  animation: marquee 35s linear infinite;
-  will-change: transform;
-}
-
-.marquee:hover .marquee-track {
-  animation-play-state: paused;
-}
-
 /* Reveal on scroll */
 .reveal {
   opacity: 0;

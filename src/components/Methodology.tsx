@@ -1,53 +1,29 @@
-import { FilterProvider } from "@/components/FilterProvider";
-import Hero from "@/components/Hero";
-import Marquee from "@/components/Marquee";
-import ProductGrid from "@/components/ProductGrid";
-import Reveal from "@/components/Reveal";
-import Sidebar from "@/components/Sidebar";
+import Reveal from "./Reveal";
 
-export default function Home() {
-  return (
-    <FilterProvider>
-      <div className="min-h-screen">
-        <Sidebar />
-        <div className="lg:ml-[280px]">
-          <main className="flex flex-col">
-            <Hero />
-            <Marquee />
-            <ProductGrid />
-            <Methodology />
-            <SiteFooter />
-          </main>
-        </div>
-      </div>
-    </FilterProvider>
-  );
-}
+const ITEMS = [
+  {
+    n: "01",
+    title: "功能层为锚",
+    body: "聚焦产品功能层的可理解性与完整性,不评 UI 美学。",
+  },
+  {
+    n: "02",
+    title: "多 Agent 测点",
+    body: "44 个主测点(含 4 个递归背景测点),跨越产品意图、能力声明、关键路径与盲区。",
+  },
+  {
+    n: "03",
+    title: "结构化产物",
+    body: "每款产品产出 Executive Summary、整体兑现度、风险机会、Quick Wins 等可执行结论。",
+  },
+  {
+    n: "04",
+    title: "可复现",
+    body: "基于 product-audit Skill 自动化执行,模板 multi-agent / standard 深度档位。",
+  },
+];
 
-function Methodology() {
-  const items = [
-    {
-      n: "01",
-      title: "功能层为锚",
-      body: "聚焦产品功能层的可理解性与完整性,不评 UI 美学。",
-    },
-    {
-      n: "02",
-      title: "多 Agent 测点",
-      body: "44 个主测点(含 4 个递归背景测点),跨越产品意图、能力声明、关键路径与盲区。",
-    },
-    {
-      n: "03",
-      title: "结构化产物",
-      body: "每款产品产出 Executive Summary、整体兑现度、风险机会、Quick Wins 等可执行结论。",
-    },
-    {
-      n: "04",
-      title: "可复现",
-      body: "基于 product-audit Skill 自动化执行,模板 multi-agent / standard 深度档位。",
-    },
-  ];
-
+export default function Methodology() {
   return (
     <section
       id="methodology"
@@ -82,7 +58,7 @@ function Methodology() {
 
           <div className="col-span-12 lg:col-span-7">
             <ol className="relative grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
-              {items.map((it, i) => (
+              {ITEMS.map((it, i) => (
                 <Reveal key={it.n} delay={i * 100} as="li">
                   <div className="group relative h-full bg-card p-7 transition-colors duration-300 hover:bg-muted">
                     <div className="flex items-baseline justify-between">
@@ -105,22 +81,5 @@ function Methodology() {
         </div>
       </div>
     </section>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="border-t border-border bg-background">
-      <div className="px-6 py-12 lg:px-12">
-        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} AI Employee Research · Built with Next.js on Vercel
-          </p>
-          <p className="text-xs text-muted-foreground">
-            研究即作品 — 我们持续追踪 AI 员工形态的演化。
-          </p>
-        </div>
-      </div>
-    </footer>
   );
 }

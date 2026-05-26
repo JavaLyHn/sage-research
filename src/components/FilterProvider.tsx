@@ -31,7 +31,6 @@ interface FilterContextValue {
 
   // CRUD
   addProduct: (input: Omit<Product, "id" | "index">) => void;
-  updateProduct: (id: string, patch: Partial<Omit<Product, "id">>) => void;
   deleteProduct: (id: string) => void;
   moveProduct: (fromId: string, toId: string, position: "before" | "after") => void;
   resetToDefaults: () => void;
@@ -100,15 +99,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const updateProduct = useCallback(
-    (id: string, patch: Partial<Omit<Product, "id">>) => {
-      setProducts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-      );
-    },
-    [],
-  );
-
   const deleteProduct = useCallback((id: string) => {
     setProducts((prev) => renumber(prev.filter((p) => p.id !== id)));
   }, []);
@@ -164,7 +154,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     clear,
     isFiltered: category !== "all",
     addProduct,
-    updateProduct,
     deleteProduct,
     moveProduct,
     resetToDefaults,

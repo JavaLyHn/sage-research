@@ -30,16 +30,12 @@ const EMPTY: FormValues = {
 
 interface Props {
   open: boolean;
-  mode: "create" | "edit";
-  initial?: Product | null;
   onClose: () => void;
   onSubmit: (values: FormValues) => void;
 }
 
 export default function ProductFormModal({
   open,
-  mode,
-  initial,
   onClose,
   onSubmit,
 }: Props) {
@@ -52,17 +48,12 @@ export default function ProductFormModal({
   // Reset form when opening
   useEffect(() => {
     if (!open) return;
-    if (initial) {
-      const { id: _id, index: _index, ...rest } = initial;
-      setValues({ ...EMPTY, ...rest });
-    } else {
-      setValues(EMPTY);
-    }
+    setValues(EMPTY);
     setErrors({});
     // Focus first input shortly after the modal appears
     const t = setTimeout(() => firstInputRef.current?.focus(), 50);
     return () => clearTimeout(t);
-  }, [open, initial]);
+  }, [open]);
 
   // Esc to close
   useEffect(() => {
@@ -135,7 +126,7 @@ export default function ProductFormModal({
             id="product-modal-title"
             className="font-serif text-xl font-semibold tracking-tight text-foreground"
           >
-            {mode === "create" ? "新增产品" : "编辑产品"}
+            新增产品
           </h3>
           <button
             type="button"
@@ -264,7 +255,7 @@ export default function ProductFormModal({
               type="submit"
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card cursor-pointer"
             >
-              {mode === "create" ? "新增" : "保存"}
+              新增
             </button>
           </div>
         </footer>

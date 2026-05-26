@@ -1,8 +1,10 @@
+import Link from "next/link";
+
 export default function Hero() {
   return (
     <section
       id="overview"
-      className="relative isolate overflow-hidden border-b border-border"
+      className="relative isolate overflow-hidden"
     >
       {/* background grid */}
       <div
@@ -50,19 +52,13 @@ export default function Hero() {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="#products"
+          <Link
+            href="/products"
             className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] transition-all duration-300 hover:gap-3 hover:shadow-[0_18px_40px_-12px_rgba(0,0,0,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             浏览所有产品
-            <ArrowDown className="h-4 w-4 transition-transform duration-300 group-hover:translate-y-0.5" />
-          </a>
-          <a
-            href="#methodology"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition-all duration-300 hover:border-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            看研究方法
-          </a>
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </div>
     </section>
@@ -83,7 +79,7 @@ function LiveBadge() {
   );
 }
 
-function ArrowDown({ className }: { className?: string }) {
+function ArrowRight({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -95,7 +91,7 @@ function ArrowDown({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M12 5v14M5 12l7 7 7-7" />
+      <path d="M5 12h14M13 5l7 7-7 7" />
     </svg>
   );
 }

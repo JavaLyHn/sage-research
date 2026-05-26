@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   CATEGORY_LABEL,
@@ -7,10 +9,15 @@ import {
 } from "@/lib/products";
 import { useFilter, type CategoryFilter } from "./FilterProvider";
 
-const NAV_ITEMS = [
-  { href: "#overview", label: "概览" },
-  { href: "#products", label: "产品档案" },
-  { href: "#methodology", label: "方法论" },
+interface NavItem {
+  href: string;
+  label: string;
+  matchPath: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/", label: "概览", matchPath: "/" },
+  { href: "/products", label: "产品档案", matchPath: "/products" },
 ];
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
@@ -29,7 +36,7 @@ export default function Sidebar() {
     <>
       {/* Mobile top bar */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/85 px-4 py-3 backdrop-blur-md lg:hidden">
-        <a href="#overview" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <span
             aria-hidden="true"
             className="flex h-7 w-7 items-center justify-center rounded-md bg-primary font-serif text-xs font-bold text-on-primary"
@@ -39,7 +46,7 @@ export default function Sidebar() {
           <span className="font-serif text-sm font-semibold tracking-tight">
             AI Employee Research
           </span>
-        </a>
+        </Link>
         <button
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
@@ -80,12 +87,13 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
     isFiltered,
     clear,
   } = useFilter();
+  const pathname = usePathname();
 
   return (
     <div className="flex h-full flex-col overflow-y-auto px-5 py-6">
       {/* Brand */}
-      <a
-        href="#overview"
+      <Link
+        href="/"
         onClick={onNavigate}
         className="group flex items-center gap-2.5 focus-visible:outline-none"
       >
@@ -100,7 +108,7 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
           <br />
           Research
         </span>
-      </a>
+      </Link>
 
       {/* Status row */}
       <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
@@ -114,50 +122,69 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
       <nav className="mt-8">
         <SectionTitle>目录</SectionTitle>
         <ul className="mt-3 flex flex-col gap-px">
-          {NAV_ITEMS.map((it) => (
-            <li key={it.href}>
-              <a
-                href={it.href}
-                onClick={onNavigate}
-                className="group flex items-center justify-between rounded-md px-3 py-2 text-sm text-secondary transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <span>{it.label}</span>
-                <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
-              </a>
-            </li>
-          ))}
+          {NAV_ITEMS.map((it) => {
+            const active = pathname === it.matchPath;
+            return (
+              <li key={it.href}>
+                <Link
+                  href={it.href}
+                  onClick={onNavigate}
+                  className={`group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors ${
+                    active
+                      ? "bg-muted font-semibold text-foreground"
+                      : "text-secondary hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {active && (
+                      <span
+                        aria-hidden="true"
+                        className="h-1 w-1 rounded-full bg-accent"
+                      />
+                    )}
+                    {it.label}
+                  </span>
+                  <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
-      {/* Category filter */}
-      <FilterGroup title="按类别筛选" className="mt-7">
-        <FilterPill
-          active={category === "all"}
-          onClick={() => setCategory("all")}
-          label="全部"
-          count={Object.values(categoryCounts).reduce((a, b) => a + b, 0)}
-        />
-        {CATEGORIES.filter((c) => (categoryCounts[c.value] ?? 0) > 0).map(
-          (c) => (
+      {/* Category filter — 仅在产品档案页显示 */}
+      {pathname === "/products" && (
+        <>
+          <FilterGroup title="按类别筛选" className="mt-7">
             <FilterPill
-              key={c.value}
-              active={category === c.value}
-              onClick={() => setCategory(c.value as CategoryFilter)}
-              label={c.label}
-              count={categoryCounts[c.value] ?? 0}
+              active={category === "all"}
+              onClick={() => setCategory("all")}
+              label="全部"
+              count={Object.values(categoryCounts).reduce((a, b) => a + b, 0)}
             />
-          ),
-        )}
-      </FilterGroup>
+            {CATEGORIES.filter((c) => (categoryCounts[c.value] ?? 0) > 0).map(
+              (c) => (
+                <FilterPill
+                  key={c.value}
+                  active={category === c.value}
+                  onClick={() => setCategory(c.value as CategoryFilter)}
+                  label={c.label}
+                  count={categoryCounts[c.value] ?? 0}
+                />
+              ),
+            )}
+          </FilterGroup>
 
-      {isFiltered && (
-        <button
-          type="button"
-          onClick={clear}
-          className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:underline cursor-pointer"
-        >
-          清除全部筛选
-        </button>
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={clear}
+              className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:underline cursor-pointer"
+            >
+              清除全部筛选
+            </button>
+          )}
+        </>
       )}
 
       {/* Footer */}

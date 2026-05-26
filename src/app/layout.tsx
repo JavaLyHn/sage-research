@@ -30,6 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
+      data-scroll-behavior="smooth"
       className={`${crimsonPro.variable} ${atkinson.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
