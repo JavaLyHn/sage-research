@@ -16,7 +16,6 @@ import {
 interface FilterContextValue {
   products: Product[];
   addProduct: (input: Omit<Product, "id" | "index">) => void;
-  deleteProduct: (id: string) => void;
   moveProduct: (
     fromId: string,
     toId: string,
@@ -90,10 +89,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const deleteProduct = useCallback((id: string) => {
-    setProducts((prev) => renumber(prev.filter((p) => p.id !== id)));
-  }, []);
-
   const moveProduct = useCallback(
     (fromId: string, toId: string, position: "before" | "after") => {
       if (fromId === toId) return;
@@ -124,7 +119,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const value: FilterContextValue = {
     products,
     addProduct,
-    deleteProduct,
     moveProduct,
     resetToDefaults,
   };

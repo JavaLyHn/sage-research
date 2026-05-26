@@ -21,7 +21,6 @@ export default function ProductGrid() {
   const {
     products,
     addProduct,
-    deleteProduct,
     moveProduct,
     resetToDefaults,
   } = useFilter();
@@ -35,12 +34,6 @@ export default function ProductGrid() {
   const handleSubmit = (values: Omit<Product, "id" | "index">) => {
     addProduct(values);
     closeModal();
-  };
-
-  const handleDelete = (p: Product) => {
-    if (window.confirm(`确定删除「${p.name}」?此操作仅在本浏览器生效。`)) {
-      deleteProduct(p.id);
-    }
   };
 
   const handleReset = () => {
@@ -152,7 +145,6 @@ export default function ProductGrid() {
                     onDragOver={onDragOver(p.id)}
                     onDrop={onDrop(p.id)}
                     onDragEnd={onDragEnd}
-                    onDelete={() => handleDelete(p)}
                   />
                 ))}
               </tbody>
@@ -194,7 +186,6 @@ function ProductRow({
   onDragOver,
   onDrop,
   onDragEnd,
-  onDelete,
 }: {
   product: Product;
   drag: DragState;
@@ -202,7 +193,6 @@ function ProductRow({
   onDragOver: (e: React.DragEvent<HTMLTableRowElement>) => void;
   onDrop: (e: React.DragEvent<HTMLTableRowElement>) => void;
   onDragEnd: () => void;
-  onDelete: () => void;
 }) {
   const reportDisabled = !product.reportPath;
   const isSource = drag.fromId === product.id;
@@ -278,22 +268,13 @@ function ProductRow({
 
       <Td className="text-right">
         <div className="inline-flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onDelete}
-            aria-label={`删除 ${product.name}`}
-            title="删除"
-            className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-card group-hover:opacity-100 dark:hover:bg-red-950/50 dark:hover:text-red-400 cursor-pointer"
-          >
-            <TrashIcon className="h-3.5 w-3.5" />
-          </button>
           {reportDisabled ? (
             <button
               type="button"
               disabled
               aria-label={`${product.name} 报告暂未发布`}
               title="报告暂未发布"
-              className="ml-1 inline-flex items-center gap-1 rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground cursor-not-allowed"
+              className="inline-flex items-center gap-1 rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground cursor-not-allowed"
             >
               查看报告
               <ArrowRight className="h-3 w-3" />
@@ -304,7 +285,7 @@ function ProductRow({
               draggable={false}
               onClick={(e) => e.stopPropagation()}
               aria-label={`查看 ${product.name} 报告`}
-              className="ml-1 inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               查看报告
               <ArrowRight className="h-3 w-3" />
@@ -381,22 +362,6 @@ function PlusIcon({ className }: { className?: string }) {
   );
 }
 
-function TrashIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" />
-    </svg>
-  );
-}
 
 function GripIcon({ className }: { className?: string }) {
   return (
