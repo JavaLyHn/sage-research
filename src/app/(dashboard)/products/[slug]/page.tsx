@@ -1,5 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ReportContent from "@/components/ReportContent";
 import { products } from "@/lib/products";
 
 export function generateStaticParams() {
@@ -24,17 +27,32 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
+function readReport(slug: string): string | null {
+  const mdPath = path.join(
+    process.cwd(),
+    "public",
+    "products",
+    slug,
+    "report.md",
+  );
+  try {
+    return fs.readFileSync(mdPath, "utf-8");
+  } catch {
+    return null;
+  }
+}
+
 export default async function ReportViewerPage({ params }: PageProps) {
   const { slug } = await params;
   const product = products.find((p) => p.reportPath === slug);
   if (!product) notFound();
 
-  const reportUrl = `/products/${slug}/report.html`;
+  const content = readReport(slug);
 
   return (
-    <div className="flex h-[100dvh] flex-col">
-      {/* Toolbar */}
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur-md lg:px-8">
+    <div className="flex flex-col">
+      {/* Sticky toolbar */}
+      <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur-md lg:px-8">
         <div className="flex items-center gap-3">
           <Link
             href="/products"
@@ -43,7 +61,10 @@ export default async function ReportViewerPage({ params }: PageProps) {
             <ArrowLeft className="h-3 w-3" />
             返回产品档案
           </Link>
-          <div className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
+          <div
+            className="hidden h-4 w-px bg-border sm:block"
+            aria-hidden="true"
+          />
           <div className="hidden sm:block">
             <p className="font-serif text-sm font-semibold leading-tight text-foreground">
               {product.name}
@@ -64,12 +85,12 @@ export default async function ReportViewerPage({ params }: PageProps) {
             <ArrowUpRight className="h-3 w-3" />
           </a>
           <a
-            href={reportUrl}
+            href={`/products/${slug}/report.html`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            新标签打开
+            原版 HTML
             <ArrowUpRight className="h-3 w-3" />
           </a>
         </div>
@@ -82,12 +103,16 @@ export default async function ReportViewerPage({ params }: PageProps) {
         </p>
       </div>
 
-      {/* Iframe viewer */}
-      <iframe
-        src={reportUrl}
-        title={`${product.name} 体验报告`}
-        className="flex-1 w-full border-0 bg-background"
-      />
+      {/* Rendered Markdown */}
+      {content ? (
+        <ReportContent slug={slug} content={content} />
+      ) : (
+        <div className="mx-auto w-full max-w-4xl px-6 py-20 text-center">
+          <p className="text-muted-foreground">
+            报告文件未找到(public/products/{slug}/report.md)
+          </p>
+        </div>
+      )}
     </div>
   );
 }
