@@ -15,7 +15,6 @@ import {
 
 interface FilterContextValue {
   products: Product[];
-  addProduct: (input: Omit<Product, "id" | "index">) => void;
   moveProduct: (
     fromId: string,
     toId: string,
@@ -27,18 +26,6 @@ interface FilterContextValue {
 const FilterContext = createContext<FilterContextValue | null>(null);
 
 const STORAGE_KEY = "ai-employee-research:products:v1";
-
-function slugifyId(name: string, existing: Set<string>): string {
-  const base =
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9一-龥]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "product";
-  if (!existing.has(base)) return base;
-  let i = 2;
-  while (existing.has(`${base}-${i}`)) i++;
-  return `${base}-${i}`;
-}
 
 const renumber = (list: Product[]): Product[] =>
   list.map((p, i) => ({ ...p, index: i + 1 }));
@@ -78,17 +65,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     }
   }, [products, hydrated]);
 
-  const addProduct = useCallback(
-    (input: Omit<Product, "id" | "index">) => {
-      setProducts((prev) => {
-        const existingIds = new Set(prev.map((p) => p.id));
-        const id = slugifyId(input.name, existingIds);
-        return renumber([...prev, { ...input, id, index: prev.length + 1 }]);
-      });
-    },
-    [],
-  );
-
   const moveProduct = useCallback(
     (fromId: string, toId: string, position: "before" | "after") => {
       if (fromId === toId) return;
@@ -118,7 +94,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 
   const value: FilterContextValue = {
     products,
-    addProduct,
     moveProduct,
     resetToDefaults,
   };

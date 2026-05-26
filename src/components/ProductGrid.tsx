@@ -2,12 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  CATEGORY_LABEL,
-  type Product,
-} from "@/lib/products";
+import { CATEGORY_LABEL, type Product } from "@/lib/products";
 import { useFilter } from "./FilterProvider";
-import ProductFormModal from "./ProductFormModal";
 
 interface DragState {
   fromId: string | null;
@@ -18,26 +14,12 @@ interface DragState {
 const EMPTY_DRAG: DragState = { fromId: null, overId: null, position: null };
 
 export default function ProductGrid() {
-  const {
-    products,
-    addProduct,
-    moveProduct,
-    resetToDefaults,
-  } = useFilter();
+  const { products, moveProduct, resetToDefaults } = useFilter();
 
-  const [modalOpen, setModalOpen] = useState(false);
   const [drag, setDrag] = useState<DragState>(EMPTY_DRAG);
 
-  const openCreate = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
-
-  const handleSubmit = (values: Omit<Product, "id" | "index">) => {
-    addProduct(values);
-    closeModal();
-  };
-
   const handleReset = () => {
-    if (window.confirm("重置为初始 24 款产品?你在本浏览器的所有改动会丢失。")) {
+    if (window.confirm("重置为初始顺序?你在本浏览器的所有排序改动会丢失。")) {
       resetToDefaults();
     }
   };
@@ -89,27 +71,12 @@ export default function ProductGrid() {
       </div>
 
       {/* Toolbar */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={openCreate}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-[0_4px_14px_-4px_rgba(0,0,0,0.3)] transition-all hover:opacity-90 hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
-          >
-            <PlusIcon className="h-3.5 w-3.5" />
-            新增产品
-          </button>
-          {products.length > 1 && (
-            <span className="text-xs text-muted-foreground">
-              ⓘ 拖动行可调整顺序
-            </span>
-          )}
-        </div>
+      <div className="mb-4 flex justify-end">
         <button
           type="button"
           onClick={handleReset}
           className="text-xs text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
-          title="清除本地改动,恢复初始 24 款"
+          title="清除本地改动,恢复初始数据"
         >
           重置为初始数据
         </button>
@@ -118,7 +85,7 @@ export default function ProductGrid() {
       {products.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 py-20 text-center">
           <p className="text-muted-foreground">
-            还没有产品,点上方「新增产品」开始
+            没有产品可显示
           </p>
         </div>
       ) : (
@@ -152,12 +119,6 @@ export default function ProductGrid() {
           </div>
         </div>
       )}
-
-      <ProductFormModal
-        open={modalOpen}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-      />
     </section>
   );
 }
@@ -345,22 +306,6 @@ function ArrowRight({ className }: { className?: string }) {
   );
 }
 
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
 
 
 function GripIcon({ className }: { className?: string }) {
