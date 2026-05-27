@@ -30,7 +30,7 @@ export default function Sidebar() {
             R
           </span>
           <span className="font-serif text-sm font-semibold tracking-tight">
-            AI Employee Research
+            Sage Research
           </span>
         </Link>
         <button
@@ -83,7 +83,7 @@ function SidebarInner({ onNavigate }: { onNavigate: () => void }) {
           R
         </span>
         <span className="font-serif text-base font-semibold leading-tight tracking-tight">
-          AI Employee
+          Sage
           <br />
           Research
         </span>

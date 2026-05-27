@@ -17,7 +17,7 @@ const atkinson = Atkinson_Hyperlegible({
 });
 
 export const metadata: Metadata = {
-  title: "AI Employee Research — 产品调研档案",
+  title: "Sage Research — AI 员工 / Agent 产品调研档案",
   description:
     "对 AI 员工 / AI Agent 类产品的深度功能层体验调研。覆盖销售、营销、协作、开发等垂类。",
 };

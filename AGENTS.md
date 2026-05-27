@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
-# AI Employee Research — 协作约定
+# Sage Research — 协作约定
 
 > 项目协作与变更约定。任何 AI 助手 / 协作者动手之前都应先读完本文。
 > CLAUDE.md 用 `@AGENTS.md` 引用本文件,本文是单一事实源。
@@ -15,11 +15,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 | 项 | 值 |
 |---|---|
-| 名称 | AI Employee Research |
+| 名称 | Sage Research |
 | 性质 | AI 员工 / AI Agent 类产品的深度调研站点(展示层) |
-| 生产地址 | https://ai-employee-research.vercel.app |
-| Vercel 项目 | `ly-hn-s-projects/my-app` |
-| GitHub 仓库 | https://github.com/JavaLyHn/my-vercel |
+| 生产地址 | https://sage-research.vercel.app |
+| Vercel 项目 | `ly-hn-s-projects/sage-research` |
+| GitHub 仓库 | https://github.com/JavaLyHn/sage-research |
 | 内容上游 | `/Users/aa00945/Desktop/octok/audits/`(报告与素材,暂未线上托管) |
 
 ## 2. 技术栈
@@ -41,7 +41,7 @@ npm run build    # 上线前本地验证
 ## 4. 目录结构
 
 ```
-ai-employee-research/
+sage-research/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx              # 字体 + 元数据 + 根 wrapper
@@ -160,6 +160,7 @@ ai-employee-research/
 - refactor: 路由拆分 — `/` 只显 Hero,`/products` 独立页(表格 + 方法论);Sidebar 类别筛选只在 /products 显示
 - refactor: 删除产品编辑功能 / 横向滚动 Marquee / 方法论独立入口,简化为新增 + 删除 + 拖动排序
 - feat: 接通「查看报告」按钮 — audits/* 迁到 `public/products/`,链接到 `/products/{reportPath}/report.html`,新标签页打开
+- chore: 品牌重命名 — `AI Employee Research` → `Sage Research`,域名/仓库/Vercel 项目/本地目录全部从 `ai-employee-research` 改为 `sage-research`。localStorage key 也迁移,旧 key 数据自动转移
 
 <!--
 追加模板(复制下面这段到「迭代日志」标题下方,删除注释包裹):

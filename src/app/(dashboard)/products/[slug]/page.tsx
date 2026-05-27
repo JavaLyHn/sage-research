@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps) {
   const product = products.find((p) => p.reportPath === slug);
   if (!product) return { title: "报告未找到" };
   return {
-    title: `${product.name} 报告 — AI Employee Research`,
+    title: `${product.name} 报告 — Sage Research`,
     description: product.positioning,
   };
 }

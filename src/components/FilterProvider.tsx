@@ -24,7 +24,8 @@ interface FilterContextValue {
 
 const FilterContext = createContext<FilterContextValue | null>(null);
 
-const STORAGE_KEY = "ai-employee-research:products:v1";
+const STORAGE_KEY = "sage-research:products:v1";
+const LEGACY_STORAGE_KEY = "ai-employee-research:products:v1";
 
 const renumber = (list: Product[]): Product[] =>
   list.map((p, i) => ({ ...p, index: i + 1 }));
@@ -35,7 +36,16 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      let raw = window.localStorage.getItem(STORAGE_KEY);
+      // 品牌从 ai-employee-research 改名为 sage-research,迁移旧 key 数据
+      if (!raw) {
+        const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacy) {
+          raw = legacy;
+          window.localStorage.setItem(STORAGE_KEY, legacy);
+          window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+        }
+      }
       if (raw) {
         const parsed = JSON.parse(raw) as Product[];
         if (Array.isArray(parsed) && parsed.length > 0) {
