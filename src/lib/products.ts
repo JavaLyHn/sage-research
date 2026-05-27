@@ -5,6 +5,7 @@ export type ProductCategory =
   | "agent"
   | "creative"
   | "data";
+export type AccessType = "open" | "freemium" | "application" | "sales";
 
 export interface Product {
   id: string;
@@ -12,7 +13,7 @@ export interface Product {
   name: string;
   positioning: string;
   url: string;
-  access: string;
+  access: AccessType;
   owner?: string;
   status: ProductStatus;
   category: ProductCategory;
@@ -33,6 +34,13 @@ export const STATUS_LABEL: Record<ProductStatus, string> = {
   "in-progress": "进行中",
 };
 
+export const ACCESS_LABEL: Record<AccessType, string> = {
+  open: "开放",
+  freemium: "有免费版",
+  application: "申请制",
+  sales: "联系销售",
+};
+
 export const products: Product[] = [
   {
     id: "artisan",
@@ -40,7 +48,7 @@ export const products: Product[] = [
     name: "Artisan AI",
     positioning: "AI 销售员工（AI BDR）",
     url: "https://www.artisan.co/",
-    access: "企业邮箱",
+    access: "application",
     owner: "倩倩",
     status: "completed",
     category: "sales",
@@ -52,7 +60,7 @@ export const products: Product[] = [
     name: "Kuse",
     positioning: "AI GTM / AI Sales Automation",
     url: "https://www.kuse.ai/",
-    access: "开放",
+    access: "open",
     owner: "倩倩",
     status: "completed",
     category: "agent",
@@ -64,7 +72,7 @@ export const products: Product[] = [
     name: "Junior AI",
     positioning: "AI 数字员工 / 协作型 Agent",
     url: "https://junior.so/",
-    access: "不完全开放",
+    access: "application",
     status: "completed",
     category: "agent",
     note: "与 Kuse 同公司：Kuse 是系统，Junior 是人格化 AI 员工",
@@ -76,7 +84,7 @@ export const products: Product[] = [
     name: "Okara AI",
     positioning: "AI Marketing Agent Suite",
     url: "https://okara.ai/",
-    access: "开放",
+    access: "open",
     owner: "倩倩",
     status: "in-progress",
     category: "marketing",
@@ -88,7 +96,7 @@ export const products: Product[] = [
     name: "Moxt",
     positioning: "AI 客户互动 / AI 协作",
     url: "https://moxt.ai/zh-CN",
-    access: "免费开放",
+    access: "freemium",
     owner: "倩倩",
     status: "completed",
     category: "agent",
@@ -100,7 +108,7 @@ export const products: Product[] = [
     name: "Monday",
     positioning: "企业协作 + AI Workflow 平台",
     url: "https://monday.com/w/agents",
-    access: "开放",
+    access: "freemium",
     owner: "何龙",
     status: "completed",
     category: "agent",
@@ -112,7 +120,7 @@ export const products: Product[] = [
     name: "Jasper",
     positioning: "AI 营销内容平台",
     url: "https://www.jasper.ai/",
-    access: "开放",
+    access: "freemium",
     owner: "何龙",
     status: "completed",
     category: "marketing",
@@ -124,7 +132,7 @@ export const products: Product[] = [
     name: "Pika Labs",
     positioning: "AI 视频生成",
     url: "https://pika.art/",
-    access: "开放",
+    access: "open",
     owner: "何龙",
     status: "completed",
     category: "creative",
@@ -136,7 +144,7 @@ export const products: Product[] = [
     name: "Relevance AI",
     positioning: "通用 Multi-Agent AI 平台",
     url: "https://relevanceai.com/",
-    access: "有免费版",
+    access: "freemium",
     owner: "何龙",
     status: "completed",
     category: "agent",
@@ -148,7 +156,7 @@ export const products: Product[] = [
     name: "Kaito",
     positioning: "Crypto 信息分析平台",
     url: "https://kaito.ai/",
-    access: "部分免费",
+    access: "freemium",
     owner: "何龙",
     status: "completed",
     category: "data",
@@ -160,7 +168,7 @@ export const products: Product[] = [
     name: "Serus",
     positioning: "AI Agent / 企业自动化",
     url: "https://www.serus.io/",
-    access: "联系销售",
+    access: "sales",
     owner: "何龙",
     status: "completed",
     category: "agent",
@@ -172,7 +180,7 @@ export const products: Product[] = [
     name: "11x",
     positioning: "AI 销售员工（AI SDR / AI 电话销售）",
     url: "https://www.11x.ai/",
-    access: "联系销售",
+    access: "sales",
     owner: "何龙",
     status: "completed",
     category: "sales",
@@ -184,7 +192,7 @@ export const products: Product[] = [
     name: "Lunar Strategy",
     positioning: "Web3 营销代理公司",
     url: "https://www.lunarstrategy.com/",
-    access: "联系销售",
+    access: "sales",
     owner: "何龙",
     status: "completed",
     category: "marketing",
@@ -196,7 +204,7 @@ export const products: Product[] = [
     name: "OneSight",
     positioning: "海外社媒管理工具",
     url: "https://onesight.com/",
-    access: "申请体验",
+    access: "application",
     owner: "何龙",
     status: "completed",
     category: "marketing",
@@ -208,7 +216,7 @@ export const products: Product[] = [
     name: "Octok",
     positioning: "AI 出海团队 / Global Expansion Team Platform",
     url: "https://www.octok.com/",
-    access: "邀请制",
+    access: "application",
     status: "completed",
     category: "agent",
     note: "6 个具名 AI 角色(Navigator/Alice/Sophia/William/Daniel/Ethan)对应出海公司组织架构",
@@ -220,7 +228,7 @@ export const products: Product[] = [
     name: "The AI CMO",
     positioning: "AI 营销 Agent / 自主跑 Campaign",
     url: "https://theaicmo.com/",
-    access: "注册即用",
+    access: "open",
     status: "completed",
     category: "marketing",
     note: "plans strategy → writes assets → publishes → learns,定位 agent 而非 prompt 工具",

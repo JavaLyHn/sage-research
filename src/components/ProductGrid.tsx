@@ -2,8 +2,23 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CATEGORY_LABEL, type Product } from "@/lib/products";
+import {
+  ACCESS_LABEL,
+  CATEGORY_LABEL,
+  type AccessType,
+  type Product,
+} from "@/lib/products";
 import { useFilter } from "./FilterProvider";
+
+const ACCESS_CHIP: Record<AccessType, string> = {
+  open: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+  freemium:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900",
+  application:
+    "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+  sales:
+    "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800/60 dark:text-zinc-300 dark:border-zinc-700",
+};
 
 interface DragState {
   fromId: string | null;
@@ -206,7 +221,11 @@ function ProductRow({
       </Td>
 
       <Td>
-        <span className="text-xs text-muted-foreground">{product.access}</span>
+        <span
+          className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${ACCESS_CHIP[product.access]}`}
+        >
+          {ACCESS_LABEL[product.access]}
+        </span>
       </Td>
 
       <Td className="text-right">

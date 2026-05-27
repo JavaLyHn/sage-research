@@ -47,17 +47,30 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         }
       }
       if (raw) {
-        const parsed = JSON.parse(raw) as Product[];
+        const parsed = JSON.parse(raw) as { id?: string }[];
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // 迁移 1: 旧 reportPath 带 "0X-" 数字前缀,文件夹改名后剥掉前缀
-          // 迁移 2: 过滤掉无 report 的产品(早期数据可能含 8 个 planned 项)
-          const migrated = parsed
-            .filter((p) => !!p.reportPath)
-            .map((p) => ({
-              ...p,
-              reportPath: p.reportPath!.replace(/^\d+-/, ""),
-            }));
-          if (migrated.length > 0) setProducts(migrated);
+          // 用户在 localStorage 里只保留产品顺序(拖拽过的次序);其余字段
+          // 始终从源数据 INITIAL_PRODUCTS 按 id 回填(自动适配 access 类型
+          // 升级、文件夹改名、planned 删除等场景)。
+          const sourceById = new Map(
+            INITIAL_PRODUCTS.map((p) => [p.id, p]),
+          );
+          const migrated: Product[] = [];
+          const seen = new Set<string>();
+          for (const item of parsed) {
+            const id = item?.id;
+            if (!id || seen.has(id)) continue;
+            const source = sourceById.get(id);
+            if (source) {
+              migrated.push(source);
+              seen.add(id);
+            }
+          }
+          // 补上 localStorage 里缺失的源数据条目(可能是新增的产品)
+          for (const p of INITIAL_PRODUCTS) {
+            if (!seen.has(p.id)) migrated.push(p);
+          }
+          setProducts(renumber(migrated));
         }
       }
     } catch {
