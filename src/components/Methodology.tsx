@@ -38,8 +38,10 @@ export default function Methodology() {
         <div className="grid grid-cols-12 gap-8">
           <div className="col-span-12 lg:col-span-5">
             <Reveal>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-accent">
-                方法论
+              <p className="mb-3 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-accent">
+                <span className="tabular-nums">06</span>
+                <span aria-hidden="true" className="h-px w-8 bg-accent/60" />
+                <span>方法论</span>
               </p>
               <h2 className="font-serif text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                 如何评一款
