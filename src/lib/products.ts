@@ -1,11 +1,10 @@
-export type ProductStatus = "completed" | "in-progress" | "planned";
+export type ProductStatus = "completed" | "in-progress";
 export type ProductCategory =
   | "sales"
   | "marketing"
   | "agent"
   | "creative"
-  | "data"
-  | "dev";
+  | "data";
 
 export interface Product {
   id: string;
@@ -27,13 +26,11 @@ export const CATEGORY_LABEL: Record<ProductCategory, string> = {
   agent: "Agent 协作",
   creative: "创意生成",
   data: "数据分析",
-  dev: "AI 开发",
 };
 
 export const STATUS_LABEL: Record<ProductStatus, string> = {
   completed: "已完成",
   "in-progress": "进行中",
-  planned: "计划中",
 };
 
 export const products: Product[] = [
@@ -228,87 +225,6 @@ export const products: Product[] = [
     category: "marketing",
     note: "plans strategy → writes assets → publishes → learns,定位 agent 而非 prompt 工具",
     reportPath: "theaicmo-com",
-  },
-  {
-    id: "qoder",
-    index: 17,
-    name: "Qoder",
-    positioning: "阿里:从 AI IDE 升级为智能体自主开发工作台",
-    url: "https://qoder.com/",
-    access: "—",
-    status: "planned",
-    category: "dev",
-  },
-  {
-    id: "miaoda",
-    index: 18,
-    name: "秒哒",
-    positioning: "百度:无代码开发平台,「一句话做应用」",
-    url: "https://www.miaoda.cn/",
-    access: "—",
-    status: "planned",
-    category: "dev",
-  },
-  {
-    id: "dumate",
-    index: 19,
-    name: "DuMate",
-    positioning: "百度:统一通用智能体入口,集成百度核心 AI 能力",
-    url: "https://www.dumate.cn/app",
-    access: "—",
-    status: "planned",
-    category: "agent",
-  },
-  {
-    id: "qclaw",
-    index: 20,
-    name: "QClaw",
-    positioning: "腾讯:AI 智能体部署工具",
-    url: "https://qclaw.qq.com/",
-    access: "—",
-    status: "planned",
-    category: "dev",
-  },
-  {
-    id: "workbuddy",
-    index: 21,
-    name: "WorkBuddy",
-    positioning: "腾讯:生产力 AI 代理服务",
-    url: "https://www.codebuddy.cn/work/",
-    access: "—",
-    status: "planned",
-    category: "agent",
-  },
-  {
-    id: "marvis",
-    index: 22,
-    name: "Marvis",
-    positioning: "腾讯:6 个 Agent 组成的协作体系,7×24 小时在线",
-    url: "https://marvis.qq.com/",
-    access: "—",
-    status: "planned",
-    category: "agent",
-  },
-  {
-    id: "fin",
-    index: 23,
-    name: "Fin AI",
-    positioning: "AI 客服 Agent(Intercom 旗下),按 Resolution 结果计费",
-    url: "https://fin.ai/",
-    access: "—",
-    status: "planned",
-    category: "agent",
-    note: "客服赛道头部 Autopilot,$0.99/单,不计 token / 不计对话",
-  },
-  {
-    id: "dust",
-    index: 24,
-    name: "Dust",
-    positioning: "企业级 AI Agent 平台,连接公司知识与工具(Sales/Support/Ops/Marketing)",
-    url: "https://dust.tt/",
-    access: "—",
-    status: "planned",
-    category: "agent",
   },
 ];
 

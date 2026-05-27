@@ -14,7 +14,6 @@ const CATEGORY_DESCRIPTIONS: Record<ProductCategory, string> = {
     "通用 Agent 平台 + 协作工作流,Connectors 与 Skills 的组装能力",
   creative: "AI 视频与图像生成,创意素材的端到端产出",
   data: "数据分析与情报型工具,Crypto / B2B / 社媒等垂直场景",
-  dev: "AI IDE / 智能体部署 / 无代码搭建平台",
 };
 
 export default function Overview() {
@@ -220,7 +219,7 @@ function Coverage() {
           <SectionLabel n="05" text="覆盖范围" />
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
             <h2 className="max-w-3xl font-serif text-3xl font-medium leading-[1.2] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              六个垂类,
+              五个垂类,
               <span className="tabular-nums">{products.length}</span> 款产品。
             </h2>
             <p className="text-sm text-muted-foreground">
