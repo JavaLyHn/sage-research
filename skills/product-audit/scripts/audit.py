@@ -291,14 +291,14 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
     """After all test points complete, do **8** cross-test synthesis LLM calls (v1.18).
 
     Produces:
-      1. strategic_abstractions — 4-6 "X 化" narratives (§2.4)
-      2. scorecard — 6-dim scoring on 5pt scale (§1.5)
+      1. strategic_abstractions — 产品定位与策略 4-6 条 (§2.4)
+      2. scorecard — 6-dim scoring on 5pt scale (§1.4)
       [3. consolidated_risks — REMOVED in v1.9]
-      4. narrative_summary — keyword map + narrative techniques (§4.1)
-      5. growth_funnel — 官网作用域 funnel, excludes L* (§6.4)
-      6. company_info — WebSearch for funding/team (§2.5, v1.8 + v1.11 identity verify)
-      7. community_feedback — WebSearch Reddit/PH/HN/G2 (§5, v1.15) — NON-OFFICIAL
-      8. competitors — WebSearch direct competitors → competitors.md (v1.18)
+      4. narrative_summary — 官网叙事分析: 关键词 + 说服手法 (§3.1)
+      5. growth_funnel — 从访客到注册的转化路径, 仅公开页 (§5)
+      6. company_info — WebSearch for funding/team (§2.5, identity-verified)
+      7. community_feedback — WebSearch Reddit/PH/HN/G2 (§4) — NON-OFFICIAL
+      8. competitors — WebSearch direct competitors → competitors.md
 
     All output strings get saved to raw/synthesis.json. Synthesis #8 ALSO writes
     a standalone <workspace>/competitors.md file. Returns (synthesis_dict,
@@ -338,73 +338,70 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
 
     synthesis = {}
 
-    # ===== 1. Strategic abstractions ("X 化" narratives) =====
-    print("   ⚡ synthesis #1: strategic abstractions (X 化 叙事)...")
+    # ===== 1. 产品定位与策略 =====
+    print("   ⚡ 综合分析 1/8：产品定位与策略...")
     prompt_strategic = (
-        "你正在对一个产品做**战略层**综合分析。基于完整审计数据，"
-        "请抽取 **4-6 个**「产品正在 X 化」形式的战略抽象方向。\n\n"
-        "这是行业惯例：分析师会从产品的方向、定位、商业化、协作模式等角度，"
-        "抽出 4-6 个 'X 化' 标签来概括产品本质。\n\n"
-        "**参考示例（Moxt 人工分析）**：\n"
-        "- AI Team 化（AI 不是工具，是团队成员）\n"
-        "- Workspace 化（围绕 workspace 而不是 chat）\n"
-        "- Shared Memory 化\n"
-        "- Slack 工作流化（嵌入 Slack 生态）\n"
-        "- Credits 商业化\n\n"
-        "**参考示例（Artisan 人工分析）**：\n"
-        "- AI Employee 化\n- AI SDR 化\n- Workflow 化\n- Persona 化\n- Autonomous 化\n\n"
-        "=== 产品主审计观察 ===\n" + main_findings_text + "\n\n"
-        "=== 产品方官方介绍（递归发现的背景页面）===\n" + background_text + "\n\n"
-        "请输出 **4-6 条**战略抽象，每条严格按以下格式：\n\n"
-        "### N. <X 化的名称>\n"
-        "**核心叙事**: 1 句话概括\n"
+        "你正在对一个产品做**定位与策略**层面的综合分析。基于完整的体验数据，"
+        "提炼出 **4-6 个**最能概括这个产品本质的定位 / 策略判断。\n\n"
+        "可以从这些角度切入：产品想做什么、面向谁、用什么形态交付、怎么收费、"
+        "和同类产品比有什么不同的选择。\n\n"
+        "**示例（仅供理解颗粒度，不要照搬措辞）**：\n"
+        "- 把 AI 包装成「团队成员」而非「工具」，让用户像招人一样使用\n"
+        "- 围绕一个统一工作台来组织功能，而不是零散的对话框\n"
+        "- 把能力锁定在某个垂直行业，主动收窄目标用户\n"
+        "- 用「按结果付费」替代「按用量付费」来建立信任\n\n"
+        "=== 产品主要体验观察 ===\n" + main_findings_text + "\n\n"
+        "=== 产品方官方介绍页面 ===\n" + background_text + "\n\n"
+        "请输出 **4-6 条**判断，每条严格按以下格式：\n\n"
+        "### N. <一句话定位判断，用平实中文，不要生造名词>\n"
+        "**核心判断**: 1 句话概括\n"
         "**支撑证据**: \n"
         "- [测点ID] 证据 1\n- [测点ID] 证据 2\n- (可选) [测点ID] 证据 3\n"
-        "**对用户/产品的含义**: 1 句话说明这个 X 化对用户意味着什么\n\n"
+        "**对用户的含义**: 1 句话说明这对用户意味着什么\n\n"
         "**严格要求**：\n"
-        "- 标题用 **中文 + (English term)** 双语，例如「AI Employee 化 (AI Employee-ification)」\n"
+        "- 标题用平实、好懂的中文短句，**不要**生造「XX 化」这类标签，也不要中英夹杂\n"
         "- 每条必须有真实测点 ID 引用作为证据（不允许编造）\n"
-        "- 不要重复同一概念（避免出现「AI Employee 化」和「AI 员工化」两个相似项）\n\n"
+        "- 几条之间不要重复同一个意思\n\n"
         "只返回这 4-6 条，不要前言、不要结论。"
     )
     text1 = llm_call(prompt_strategic, max_tokens=2200)
-    synthesis["strategic_abstractions"] = _wrap_llm_error(text1, "§2.4 战略 X 化叙事")
+    synthesis["strategic_abstractions"] = _wrap_llm_error(text1, "§2.4 产品定位与策略")
     llm_calls_used += 1
 
-    # ===== 2. Multi-dim scorecard (5pt scale, 6 dimensions) =====
-    print("   ⚡ synthesis #2: 6-dim 综合评分 (5 分制)...")
+    # ===== 2. 综合评分（5 分制，6 个维度）=====
+    print("   ⚡ 综合分析 2/8：综合评分（5 分制）...")
     prompt_scorecard = (
-        "你正在为产品做**综合评分**。基于完整审计数据，对以下 6 个维度按 5 分制评分。\n\n"
+        "你正在为产品做**综合评分**。基于完整的体验数据，对以下 6 个维度按 5 分制评分。\n\n"
         "**评分标准**：\n"
-        "- 5.0 / 5.0 = 行业顶级 / 完美\n"
-        "- 4.0 / 5.0 = 优秀 / 显著好于平均\n"
-        "- 3.0 / 5.0 = 合格 / 行业平均水平\n"
-        "- 2.0 / 5.0 = 偏弱 / 有明显缺陷\n"
-        "- 1.0 / 5.0 = 差 / 严重不足\n"
+        "- 5.0 / 5.0 = 同类产品中顶尖\n"
+        "- 4.0 / 5.0 = 优秀，明显好于平均\n"
+        "- 3.0 / 5.0 = 合格，行业平均水平\n"
+        "- 2.0 / 5.0 = 偏弱，有明显缺陷\n"
+        "- 1.0 / 5.0 = 差，严重不足\n"
         "- 精确到 **0.5 分**\n\n"
         "**6 个评分维度**（不要新增、不要漏）：\n"
         "1. **产品方向清晰度** — 产品要做什么 / 不做什么 是否一目了然\n"
-        "2. **Narrative 表达力** — 价值主张和叙事是否有力、可信\n"
-        "3. **信息架构（IA）** — 信息层级、导航、子页组织是否清晰\n"
-        "4. **功能广度与深度** — 功能覆盖面是否够、关键功能是否解释深入\n"
-        "5. **AI / 核心能力可信度** — 产品声称的 AI / 核心能力是否有可信证据支撑\n"
-        "6. **商业化清晰度** — 定价模式、套餐分层、计费单位是否清晰\n\n"
-        "=== 产品审计观察 ===\n" + main_findings_text + "\n\n"
+        "2. **价值主张表达力** — 产品卖点和说法是否有力、可信\n"
+        "3. **信息架构** — 信息层级、导航、子页面的组织是否清晰\n"
+        "4. **功能广度与深度** — 功能覆盖面是否够、关键功能是否解释到位\n"
+        "5. **核心能力可信度** — 产品声称的能力是否有可信证据支撑\n"
+        "6. **商业化清晰度** — 定价方式、套餐分层、计费单位是否清晰\n\n"
+        "=== 产品体验观察 ===\n" + main_findings_text + "\n\n"
         "=== 产品方官方介绍 ===\n" + background_text + "\n\n"
-        "**严格输出格式**（只返回这个 markdown table）：\n\n"
+        "**严格输出格式**（只返回这一个表格）：\n\n"
         "| 维度 | 评分 | 1-2 句话说明（引用具体 [测点ID]） |\n"
         "|---|---:|---|\n"
         "| 产品方向清晰度 | X.X / 5 | ... |\n"
-        "| Narrative 表达力 | X.X / 5 | ... |\n"
-        "| 信息架构（IA） | X.X / 5 | ... |\n"
+        "| 价值主张表达力 | X.X / 5 | ... |\n"
+        "| 信息架构 | X.X / 5 | ... |\n"
         "| 功能广度与深度 | X.X / 5 | ... |\n"
-        "| AI / 核心能力可信度 | X.X / 5 | ... |\n"
+        "| 核心能力可信度 | X.X / 5 | ... |\n"
         "| 商业化清晰度 | X.X / 5 | ... |\n"
         "| **综合平均** | **X.X / 5** | **1 句话综合判定** |\n\n"
         "不要前言、不要分析、只返回表格。"
     )
     text2 = llm_call(prompt_scorecard, max_tokens=1500)
-    synthesis["scorecard"] = _wrap_llm_error(text2, "§1.5 综合评分")
+    synthesis["scorecard"] = _wrap_llm_error(text2, "§1.4 综合评分")
     llm_calls_used += 1
 
     # ===== 3. (REMOVED v1.9) Consolidated product-level risks =====
@@ -440,33 +437,32 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
             marketing_blocks.append(block)
     marketing_text = "\n\n".join(marketing_blocks)[:8500]
 
-    print("   ⚡ synthesis #4: 官网 Narrative 综合 (叙事手法 + 关键词图谱)...")
+    print("   ⚡ 综合分析 4/8：官网叙事分析（说法 + 高频关键词）...")
     prompt_narrative = (
-        "你正在分析产品**官网的叙事手法**。基于以下营销页 / 介绍页观察，"
-        "总结产品官方的叙事风格、关键词图谱和叙事手法。\n\n"
-        "**这是行业惯例的 §3.5 章节**：分析师会从官网的语言、用词、修辞、"
-        "示例选择中，反推产品方想要建立什么样的认知。\n\n"
-        "**参考输出范式（来自 Artisan 人工分析）**：\n"
-        "- 关键词图谱：Future of Work / AI Presence / Sales Workspace / Modern / Minimal\n"
-        "- 叙事手法：否定式定位（\"isn't just another...\"）+ 数字背书 + 拟人化命名\n\n"
+        "你正在分析产品**官网是怎么讲述自己的**。基于以下营销页 / 介绍页观察，"
+        "总结产品官方的表达风格、高频关键词，以及它惯用的说服手法。\n\n"
+        "从官网的用词、措辞、举例方式中，反推产品方想让用户形成什么印象。\n\n"
+        "**示例（仅供理解颗粒度，不要照搬）**：\n"
+        "- 高频关键词：未来的工作方式 / AI 团队 / 销售工作台 / 简洁\n"
+        "- 说服手法：先否定同类（「这不只是又一个……」）+ 数字背书 + 给 AI 起人名\n\n"
         "=== 营销页 / 介绍页观察 ===\n" + marketing_text + "\n\n"
         "=== 产品方官方介绍 ===\n" + background_text + "\n\n"
         "请严格按以下结构输出（markdown）：\n\n"
-        "#### 关键词图谱\n\n"
-        "| 关键词 / 短语 | 频次或权重 | 在哪类页面出现 | 想建立的认知 |\n"
+        "#### 高频关键词\n\n"
+        "| 关键词 / 短语 | 出现频次或权重 | 在哪类页面出现 | 想建立的印象 |\n"
         "|---|---|---|---|\n"
-        "| (6-10 个最有信号的关键词，按权重排序) |\n\n"
-        "#### 叙事手法分析\n\n"
-        "列出 3-5 个该产品使用的叙事手法，每条格式：\n\n"
-        "**1. 手法名称（中英双语）**\n"
+        "| (6-10 个最有代表性的关键词，按权重排序) |\n\n"
+        "#### 说服手法分析\n\n"
+        "列出 3-5 个该产品惯用的说服手法，每条格式：\n\n"
+        "**1. 手法名称（用平实中文命名，不要中英夹杂）**\n"
         "- 具体表现：引用一句原文 [测点ID]\n"
-        "- 效果意图：1 句话\n\n"
-        "#### 整体叙事评价\n\n"
-        "1-2 句话总结：这个产品想让用户**感觉**它是什么？这种叙事的可信度如何？\n\n"
-        "不要前言、不要 '以下是分析' 这种话，直接出内容。"
+        "- 想达到的效果：1 句话\n\n"
+        "#### 整体评价\n\n"
+        "1-2 句话总结：这个产品想让用户**感觉**它是什么？这套说法可信度如何？\n\n"
+        "不要前言、不要「以下是分析」这种话，直接出内容。"
     )
     text4 = llm_call(prompt_narrative, max_tokens=2000)
-    synthesis["narrative_summary"] = _wrap_llm_error(text4, "§4.1 官网 Narrative 综合")
+    synthesis["narrative_summary"] = _wrap_llm_error(text4, "§3.1 官网叙事分析")
     llm_calls_used += 1
 
     # ===== 5. Growth funnel inference (v1.6, v1.9 restricted to 官网 only) =====
@@ -510,56 +506,56 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
     growth_blocks.extend(background_blocks)
     growth_text = "\n\n".join(growth_blocks)[:8500]
 
-    print("   ⚡ synthesis #5: 用户增长漏斗推断 (官网作用域 — 不含 dashboard)...")
+    print("   ⚡ 综合分析 5/8：从访客到注册的转化路径（仅公开页面）...")
     prompt_growth = (
-        "你正在**推断**一个产品的**官网作用域**用户增长漏斗。**只基于公开页面**"
-        "（pricing / signup / demo / onboarding 表单 / 背景介绍页）的观察，"
+        "你正在**推断**一个产品「从访客到注册」的转化路径。**只基于公开页面**"
+        "（定价页 / 注册页 / 预约演示 / 引导填表 / 背景介绍页）的观察，"
         "推断这个产品的：\n\n"
-        "1. **用户增长路径**：从看到官网到成为注册用户 / 试用用户的关键节点\n"
-        "2. **激活机制**：访客可见的 \"Aha moment\" 信号（基于页面叙述，不依赖 dashboard 数据）\n"
-        "3. **商业化转化路径**：免费 → 付费的关键决策点（pricing 页 + 套餐结构）\n"
-        "4. **触发购买 / 试用的钩子**：免费额度 / Demo 表单 / 试用入口的设计\n\n"
-        "⚠️ **重要作用域限制**：\n"
-        "- **只用官网 + 公开介绍页数据**，不要引用任何 L\\* 编号的登录态测点\n"
-        "- 不要分析\"团队扩散 / 邀请成员 / 多席位\"等需要登录后才能观察的环节\n"
-        "- 不要推断\"长期留存机制\"等需要看 dashboard / billing / settings 才能判断的内容\n"
-        "- 这是**未注册访客视角**的漏斗——只到 signup / demo / trial 入口为止\n\n"
-        "**注意**：这是\"推断\"，不是事实复述。明确标注哪些是页面直接陈述、哪些是你的推断。\n\n"
-        "=== Pricing / Signup / Demo / Background 观察（仅官网） ===\n" + growth_text + "\n\n"
+        "1. **转化路径**：从看到官网到成为注册 / 试用用户，中间有哪些关键步骤\n"
+        "2. **让用户心动的点**：访客在公开页面上能看到的、最可能打动他的卖点\n"
+        "3. **付费转化路径**：从免费到付费的关键决策点（定价页 + 套餐结构）\n"
+        "4. **促使注册 / 试用的设计**：免费额度 / 预约演示 / 试用入口是怎么安排的\n\n"
+        "⚠️ **范围限制**：\n"
+        "- **只用官网 + 公开介绍页的数据**，不要引用任何 L 开头的登录后测点\n"
+        "- 不要分析「邀请成员 / 多人协作 / 多席位」等需要登录后才能看到的环节\n"
+        "- 不要推断「长期留存」等需要看登录后页面才能判断的内容\n"
+        "- 这是**未注册访客视角**的路径——只到注册 / 预约演示 / 开始试用为止\n\n"
+        "**注意**：这是「推断」，不是照搬事实。请明确区分哪些是页面直接写的、哪些是你的推断。\n\n"
+        "=== 定价 / 注册 / 演示 / 背景页观察（仅公开页面） ===\n" + growth_text + "\n\n"
         "请严格按以下结构输出（markdown）：\n\n"
-        "#### 官网增长漏斗推断图\n\n"
+        "#### 转化路径示意\n\n"
         "```\n"
-        "Stage 1: <名称> (e.g. 落地页认知)\n"
-        "    ↓ 关键触点: <来自 [测点ID] 的证据>\n"
-        "Stage 2: <名称> (e.g. 评估页 / 定价对比)\n"
-        "    ↓ 关键触点: ...\n"
-        "Stage 3-N: ... (终止于注册 / Demo 申请 / 试用入口)\n"
+        "第 1 步：<名称>（例如：看到落地页）\n"
+        "    ↓ 关键触点：<来自 [测点ID] 的证据>\n"
+        "第 2 步：<名称>（例如：对比定价 / 评估）\n"
+        "    ↓ 关键触点：...\n"
+        "第 3 步起：……（最后停在注册 / 预约演示 / 开始试用）\n"
         "```\n\n"
-        "**作用域**：只到访客**完成转化进入产品**为止（注册 / Demo 表单提交 / 试用启动）。"
-        "登录后的 onboarding / activation / 留存请勿包含。\n\n"
-        "#### 关键漏斗节点详解\n\n"
-        "对每个 Stage 写一段（**3-5 个 Stage**）：\n\n"
-        "**Stage N: <名称>**\n"
-        "- 页面陈述：（直接观察到的） [测点ID]\n"
-        "- 我的推断：（基于陈述的推论）\n"
-        "- 潜在流失点：用户可能在这一步流失的原因\n\n"
+        "**范围**：只到访客**完成转化、进入产品**为止（注册 / 提交演示申请 / 开始试用）。"
+        "登录后的引导、激活、留存都不要写。\n\n"
+        "#### 各步骤详解\n\n"
+        "对每个步骤写一段（**3-5 个步骤**）：\n\n"
+        "**第 N 步：<名称>**\n"
+        "- 页面写了什么：（直接观察到的） [测点ID]\n"
+        "- 我的推断：（基于上面的推论）\n"
+        "- 可能流失的原因：用户为什么可能在这一步走掉\n\n"
         "#### 转化设计观察\n\n"
-        "- **入口设计**：Demo 表单 vs 自助试用 vs 立即注册 的对比与权衡\n"
-        "- **价格 / 套餐心智锚点**：访客读完 pricing 页后会怎样判断成本\n"
-        "- **可见的 Aha 承诺**：官网用什么话语承诺 \"用了之后会发生什么\"（不是登录后真实体验）\n\n"
-        "#### 漏斗设计的强弱判断（仅官网层面）\n\n"
+        "- **入口设计**：预约演示 / 自助试用 / 直接注册，几种入口的取舍\n"
+        "- **价格预期**：访客读完定价页后会怎么判断要花多少钱\n"
+        "- **公开承诺**：官网用什么话术承诺「用了之后会发生什么」（不是登录后的真实体验）\n\n"
+        "#### 转化设计的强弱（仅公开页面）\n\n"
         "用 ✅ / ⚠️ / ❌ 列 3-5 条评价。\n\n"
-        "不要前言。**严禁**引用 L* 测点或任何登录后的内容。"
+        "不要前言。**严禁**引用 L 开头的测点或任何登录后的内容。"
     )
     text5 = llm_call(prompt_growth, max_tokens=2400)
-    synthesis["growth_funnel"] = _wrap_llm_error(text5, "§6.4 用户增长漏斗推断")
+    synthesis["growth_funnel"] = _wrap_llm_error(text5, "§5 从访客到注册的转化路径")
     llm_calls_used += 1
 
     # ===== 6. Company basic info via web search (v1.8) =====
     # Pull factual context (founding / funding / team) from external sources
     # since the audit itself only sees the company's own marketing pages.
     # This aligns with §1.1 of human-authored product analysis reports.
-    print("   ⚡ synthesis #6: 公司基本信息 (web search — 融资 / 团队 / 上线时间)...")
+    print("   ⚡ 综合分析 6/8：公司基本信息（联网搜索：融资 / 团队 / 上线时间）...")
 
     # Extract company domain from audit-meta.json or first finding
     from urllib.parse import urlparse
@@ -711,7 +707,7 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         timeout=300,
         allowed_tools=["WebSearch", "WebFetch"],
     )
-    synthesis["company_info"] = _wrap_llm_error(text6, "§2.5 公司基本信息 (WebSearch)")
+    synthesis["company_info"] = _wrap_llm_error(text6, "§2.5 公司基本信息")
     llm_calls_used += 1
 
     # ===== 7. Community feedback via web search (v1.15) =====
@@ -719,15 +715,15 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
     # Hacker News / G2 / Trustpilot) to surface real-user signal that
     # the company's own pages won't show. Same identity-anchoring rigor
     # as v1.11: domain-locked queries, real URL citations, no fabrication.
-    print("   ⚡ synthesis #7: 第三方社区反馈 (Reddit / Product Hunt / HN / G2 — 非官方)...")
+    print("   ⚡ 综合分析 7/8：第三方社区反馈（Reddit / Product Hunt / HN / G2，非官方）...")
     prompt_community = (
-        "你需要为产品审计报告生成 §5 第三方社区反馈章节。\n\n"
+        "你需要为产品体验报告生成「第三方社区反馈」章节（报告里的第 4 章）。\n\n"
         "════════════════════════════════════════════════════════════════════════\n"
-        "⚠️  这一节的特殊性质：信息来源是**非官方第三方平台**\n"
+        "⚠️  这一节的特殊性质：信息来源是**非官方的第三方平台**\n"
         "════════════════════════════════════════════════════════════════════════\n\n"
-        "和 §2.5 公司基本信息一样必须用 WebSearch 主动搜索，但**搜索范围限定在用户社区 /\n"
-        "评论站**，不是公司新闻稿 / 官方融资报道。这一节专门展示**真实用户怎么说**，\n"
-        "对照官方叙事 (§4.1 Narrative) 找出 gap。\n\n"
+        "和「公司基本信息」一样要用 WebSearch 主动搜索，但**搜索范围限定在用户社区 /\n"
+        "评论站**，而不是公司新闻稿 / 官方融资报道。这一节专门呈现**真实用户怎么说**，\n"
+        "并对照官方说法（见 §3.1 官网叙事分析）找出两者的差异。\n\n"
         "════════════════════════════════════════════════════════════════════════\n"
         "目标产品（仅搜这一个实体，避免重名混入）\n"
         "════════════════════════════════════════════════════════════════════════\n\n"
@@ -754,35 +750,35 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         f"5. **可选：Twitter/X**（搜公开讨论 thread，注意时效性）\n\n"
         "**严格要求**：\n"
         "1. 必须用 WebSearch 主动搜索 — 不要凭知识库猜测\n"
-        "2. **禁用裸名称搜索** — 若公司名通用（如 Pika），用 `产品名 + 产品概念` 限定\n"
-        "3. 每条 finding 必须有**真实 URL 引用**（Reddit thread / PH page / HN comment 链接）\n"
-        "4. 不能合并相似讨论编造一个共识 — 要保留个体讨论的原文 / 引用\n"
+        "2. **不要用产品名裸搜** — 若名称通用（如 Pika），用 `产品名 + 产品概念` 限定\n"
+        "3. 每条反馈必须有**真实链接**（Reddit 帖子 / Product Hunt 页面 / HN 评论链接）\n"
+        "4. 不能把多条相似讨论捏合成一个「共识」 — 要保留每条讨论的原话 / 引用\n"
         "5. 搜不到讨论时输出情况二的模板，**不要编造**\n\n"
         "════════════════════════════════════════════════════════════════════════\n"
         "情况一 — 找到社区讨论时的输出\n"
         "════════════════════════════════════════════════════════════════════════\n\n"
-        "#### 5.1 调研范围与方法\n\n"
-        "简要说明：搜了哪些平台、找到多少条相关 thread / comment、覆盖时间窗。\n"
+        "#### 4.1 调研范围与方法\n\n"
+        "简要说明：搜了哪些平台、找到多少条相关帖子 / 评论、覆盖的时间范围。\n"
         "用 1 段话 + 列表形式。\n\n"
-        "#### 5.2 核心议题（按讨论频次）\n\n"
+        "#### 4.2 核心议题（按讨论热度）\n\n"
         "| 议题 | 讨论方向（正面/负面/中性）| 出现频次 | 主要来源平台 |\n"
         "|---|---|---|---|\n"
         "| (3-6 条最常被讨论的议题) |\n\n"
-        "#### 5.3 正面评价 / 用户喜欢的点\n\n"
-        "3-5 条真实正面用户反馈，每条严格按以下格式：\n\n"
-        "- **来源**: [平台 thread title](URL) — `u/username` 或 `用户名`, 日期\n"
-        "  - **原文引用**: > 「...」\n"
+        "#### 4.3 正面评价 / 用户喜欢的点\n\n"
+        "3-5 条真实正面反馈，每条严格按以下格式：\n\n"
+        "- **来源**: [帖子标题](链接) — `用户名`, 日期\n"
+        "  - **原话引用**: > 「...」\n"
         "  - **关键词**: ...\n\n"
-        "#### 5.4 负面 / 批评 / 担忧\n\n"
+        "#### 4.4 负面 / 批评 / 担忧\n\n"
         "同样 3-5 条真实负面或质疑反馈，格式同上。\n\n"
-        "#### 5.5 与官方叙事的差异（vs §4.1 Narrative）\n\n"
+        "#### 4.5 与官方说法的差异\n\n"
         "用 1-2 段话指出：\n"
-        "- 第三方讨论的产品形象，与官方 Narrative §4.1 描绘的形象，哪里**一致**，哪里有 **gap**\n"
-        "- 若有重大 gap（如官网说 '行业标杆' 但 Reddit 大量抱怨），明确写出\n\n"
+        "- 第三方讨论里的产品形象，和官网（见 §3.1 官网叙事分析）描绘的形象，哪里一致、哪里有差异\n"
+        "- 若有明显反差（如官网说「行业标杆」但社区大量抱怨），明确写出\n\n"
         "#### ⚠️ 信息来源声明\n\n"
-        "本节所有内容来自**非官方第三方平台**（Reddit / Product Hunt / HN / G2 等）。\n"
-        "内容可能含主观偏见、过时信息、个别用户的极端观点。\n"
-        "决策时建议结合 §2.5 公司官方信息 + §4 实测观察综合判断。\n\n"
+        "本节所有内容来自**非官方的第三方平台**（Reddit / Product Hunt / HN / G2 等）。\n"
+        "内容可能带有主观偏见、过时信息或个别用户的极端观点。\n"
+        "决策时建议结合公司官方信息（§2.5）+ 实测观察（§3）综合判断。\n\n"
         "════════════════════════════════════════════════════════════════════════\n"
         "情况二 — 未找到显著社区讨论时\n"
         "════════════════════════════════════════════════════════════════════════\n\n"
@@ -802,7 +798,7 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "- 不要复读 '情况一/二'、'Format A/B'、'WebSearch 搜索范围限定...' 等流程标签\n"
         "- 不要复读 prompt 内提到的工具版本号（如 v1.x）或任何含 v1./v2. 的版本字眼\n"
         "- 不要输出 'I now have enough...' / 'Let me think...' / '我现在有足够信息...' 等内部独白\n"
-        "- 直接以章节标题（如 #### 5.1 / #### ⚠️ 未找到显著社区讨论）开头\n"
+        "- 直接以章节标题（如 #### 4.1 / #### ⚠️ 未找到显著社区讨论）开头\n"
         "- 第一个字符必须是 markdown 标题符号 #、|、-、*，不能是英文/中文长句\n"
     )
     text7 = llm_call(
@@ -811,7 +807,7 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         timeout=400,
         allowed_tools=["WebSearch", "WebFetch"],
     )
-    synthesis["community_feedback"] = _wrap_llm_error(text7, "§5 第三方社区反馈 (WebSearch)")
+    synthesis["community_feedback"] = _wrap_llm_error(text7, "§4 第三方社区反馈")
     llm_calls_used += 1
 
     # ===== 8. Competitor discovery via web search (v1.18 / v1.19 三层) =====
@@ -821,7 +817,7 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
     # 3) 行业层 (vertical domain). WebSearch alternatives / vs / best <category>
     # with domain anchoring to avoid name collisions. Strong-relevance only —
     # weak associations and upstream/downstream tools MUST be excluded.
-    print("   ⚡ synthesis #8: 直接竞品发现 (WebSearch — 三层：平台/职能/行业)...")
+    print("   ⚡ 综合分析 8/8：直接竞品发现（联网搜索，三层：平台 / 职能 / 行业）...")
     prompt_competitors = (
         "你需要为目标产品搜索其**直接竞品**，并按**三个维度**分层组织。\n\n"
         "════════════════════════════════════════════════════════════════════════\n"
@@ -1721,8 +1717,8 @@ def run_login_mode(args):
         # logged-in workspace data.
         if new_findings:
             all_findings = existing_findings + new_findings
-            print(f"\n🧠 Re-running synthesis pass on {len(all_findings)} total findings "
-                  f"({len(existing_findings)} marketing + {len(new_findings)} dashboard)...")
+            print(f"\n🧠 重新运行综合分析，共 {len(all_findings)} 条观察 "
+                  f"（{len(existing_findings)} 条公开页 + {len(new_findings)} 条登录后）...")
             _, llm_calls = synthesis_pass(all_findings, workspace, llm_calls, max_llm_calls)
 
     finally:
@@ -2097,15 +2093,15 @@ def main():
 
                 print(f"\n   📚 background deep-dive complete — captured {n_dived} intro page(s)")
 
-        # ====== Phase final: Synthesis pass (v1.5+v1.6+v1.8+v1.9) ======
-        # 5 extra LLM calls that aggregate ALL findings into:
-        #   - §1.4 战略 X 化 叙事 (strategic abstractions)
-        #   - §0.5 综合评分 (5pt scorecard across 6 dimensions)
-        #   - §3.1 官网 Narrative 综合 (keyword map + narrative techniques)
-        #   - §5.4 官网用户增长漏斗推断 (官网作用域, excludes L* dashboard)
-        #   - §1.5 公司基本信息 (WebSearch — funding / team / founding)
-        # v1.9: consolidated_risks (§4.1) removed per user feedback.
-        print(f"\n🧠 Synthesis pass: cross-test aggregation (6 LLM calls, v1.15)...")
+        # ====== Phase final: Synthesis pass ======
+        # 8 extra LLM calls that aggregate ALL findings into:
+        #   - §2.4 产品定位与策略 (strategic abstractions)
+        #   - §1.4 综合评分 (5pt scorecard across 6 dimensions)
+        #   - §3.1 官网叙事分析 (keyword map + persuasion techniques)
+        #   - §5 从访客到注册的转化路径 (public-pages only, excludes L* dashboard)
+        #   - §2.5 公司基本信息 (WebSearch — funding / team / founding)
+        #   - §4 第三方社区反馈 (WebSearch Reddit/PH/HN/G2) + competitors.md
+        print(f"\n🧠 综合分析：跨测点聚合（8 次 LLM 调用）...")
         _, llm_calls = synthesis_pass(findings, workspace, llm_calls, budget["max_llm_calls"])
 
     finally:

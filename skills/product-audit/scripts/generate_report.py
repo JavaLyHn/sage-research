@@ -41,17 +41,13 @@ REPORT_TEMPLATE_MD = """# {product_name} 产品深度体验报告
   - [2.1 基础信息](#21-基础信息)
   - [2.2 测点速览](#22-测点速览)
   - [2.3 产品 / 公司背景信息](#23-产品--公司背景信息)
-  - [2.4 产品战略抽象](#24-产品战略抽象)
+  - [2.4 产品定位与策略](#24-产品定位与策略)
   - [2.5 公司基本信息](#25-公司基本信息)
 - [3. 体验流程记录](#3-体验流程记录)
-  - [3.1 官网叙事综合](#31-官网叙事综合)
+  - [3.1 官网叙事分析](#31-官网叙事分析)
   - [3.2 测点流程详情](#32-测点流程详情)
 - [4. 第三方社区反馈](#4-第三方社区反馈)
-- [5. 总结](#5-总结)
-  - [5.1 一句话评价](#51-一句话评价)
-  - [5.2 最大优点](#52-最大优点)
-  - [5.3 最大风险](#53-最大风险)
-  - [5.4 用户增长漏斗推断](#54-用户增长漏斗推断)
+- [5. 从访客到注册的转化路径](#5-从访客到注册的转化路径)
 
 ---
 
@@ -80,7 +76,7 @@ REPORT_TEMPLATE_MD = """# {product_name} 产品深度体验报告
 ### 2.1 基础信息
 
 - **URL**: {url}
-- **首屏标题 / Slogan**: {first_title}
+- **首屏标题**: {first_title}
 
 ### 2.2 测点速览
 
@@ -92,7 +88,7 @@ REPORT_TEMPLATE_MD = """# {product_name} 产品深度体验报告
 
 {background_section}
 
-### 2.4 产品战略抽象
+### 2.4 产品定位与策略
 
 {strategic_abstractions_section}
 
@@ -104,7 +100,7 @@ REPORT_TEMPLATE_MD = """# {product_name} 产品深度体验报告
 
 ## 3. 体验流程记录
 
-### 3.1 官网叙事综合
+### 3.1 官网叙事分析
 
 {narrative_summary_section}
 
@@ -120,21 +116,7 @@ REPORT_TEMPLATE_MD = """# {product_name} 产品深度体验报告
 
 ---
 
-## 5. 总结
-
-### 5.1 一句话评价
-
-{one_line_verdict}
-
-### 5.2 最大优点
-
-{top_opportunities}
-
-### 5.3 最大风险
-
-{top_risks}
-
-### 5.4 用户增长漏斗推断
+## 5. 从访客到注册的转化路径
 
 {growth_funnel_section}
 """
@@ -727,54 +709,50 @@ def load_synthesis(workspace: Path) -> dict:
 def _render_scorecard_section(synthesis: dict) -> str:
     raw = (synthesis or {}).get("scorecard", "").strip()
     if not raw:
-        return ("_本次未生成综合评分（synthesis pass 未运行或 LLM 预算耗尽）。_\n\n"
-                "_重跑：`python3 audit.py ... ` 会在末尾自动追加 synthesis pass。_")
+        return "_本次未生成综合评分。_"
     return raw
 
 
 def _render_strategic_abstractions_section(synthesis: dict) -> str:
     raw = (synthesis or {}).get("strategic_abstractions", "").strip()
     if not raw:
-        return ("_本次未生成战略抽象（synthesis pass 未运行或 LLM 预算耗尽）。_")
+        return "_本次未生成产品定位与策略分析。_"
     return raw
 
 
 def _render_consolidated_risks_section(synthesis: dict) -> str:
     raw = (synthesis or {}).get("consolidated_risks", "").strip()
     if not raw:
-        return ("_本次未生成综合风险归纳（synthesis pass 未运行或 LLM 预算耗尽）。"
-                "见 §4 体验流程详情。_")
+        return "_本次未生成综合风险归纳，详见第 3 章体验流程。_"
     return raw
 
 
 def _render_narrative_summary_section(synthesis: dict) -> str:
     raw = (synthesis or {}).get("narrative_summary", "").strip()
     if not raw:
-        return ("_本次未生成官网 Narrative 综合（synthesis pass 未运行或 LLM 预算耗尽）。_")
+        return "_本次未生成官网叙事分析。_"
     return raw
 
 
 def _render_growth_funnel_section(synthesis: dict) -> str:
     raw = (synthesis or {}).get("growth_funnel", "").strip()
     if not raw:
-        return ("_本次未生成用户增长漏斗推断（synthesis pass 未运行或 LLM 预算耗尽）。_")
+        return "_本次未生成转化路径推断。_"
     return raw
 
 
 def _render_community_feedback_section(synthesis: dict) -> str:
-    """v1.15: render §5 第三方社区反馈 (Reddit / PH / HN / G2 — non-official)."""
+    """渲染第 4 章：第三方社区反馈（来自 Reddit / Product Hunt / Hacker News / G2 等非官方平台）。"""
     raw = (synthesis or {}).get("community_feedback", "").strip()
     if not raw:
-        return ("_本次未生成第三方社区反馈（synthesis pass 未运行 / LLM 预算耗尽 / "
-                "WebSearch 工具不可用）。建议人工到 Reddit / Product Hunt / HN / G2 核实。_")
+        return "_本次未找到第三方社区的相关讨论。_"
     return raw
 
 
 def _render_company_info_section(synthesis: dict) -> str:
     raw = (synthesis or {}).get("company_info", "").strip()
     if not raw:
-        return ("_本次未生成公司基本信息（synthesis pass 未运行 / LLM 预算耗尽 / "
-                "web search 工具不可用）。_")
+        return "_本次未生成公司基本信息。_"
     return raw
 
 
