@@ -286,9 +286,18 @@ def _wrap_llm_error(text: str, section_label: str) -> str:
     return text
 
 
+def _reusable(val) -> bool:
+    """判断 synthesis 某节是否已有可复用的成功结果（非空、非失败占位符）。"""
+    return (isinstance(val, str) and val.strip() != ""
+            and "调用失败" not in val and "LLM 调用失败" not in val)
+
+
 def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
-                   max_llm_calls: int) -> tuple:
+                   max_llm_calls: int, reuse: dict = None) -> tuple:
     """After all test points complete, do **8** cross-test synthesis LLM calls (v1.18).
+
+    reuse: 若提供（如上次 synthesis.json），则已成功的节直接复用、只重跑失败/缺失的节。
+    用于并行跑撞限额后串行补跑，避免覆盖已成功的内容。
 
     Produces:
       1. strategic_abstractions — 产品定位与策略 4-6 条 (§2.4)
@@ -336,6 +345,7 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
     background_text = "\n\n".join(background_blocks)[:3500]
     p_text = "\n".join(p_observations)[:11000]
 
+    reuse = reuse or {}
     synthesis = {}
 
     # ===== 1. 产品定位与策略 =====
@@ -364,9 +374,13 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "- 几条之间不要重复同一个意思\n\n"
         "只返回这 4-6 条，不要前言、不要结论。"
     )
-    text1 = llm_call(prompt_strategic, max_tokens=2200)
-    synthesis["strategic_abstractions"] = _wrap_llm_error(text1, "§2.4 产品定位与策略")
-    llm_calls_used += 1
+    if _reusable(reuse.get("strategic_abstractions")):
+        synthesis["strategic_abstractions"] = reuse["strategic_abstractions"]
+        print("      ⏭️ 复用已有结果")
+    else:
+        synthesis["strategic_abstractions"] = _wrap_llm_error(
+            llm_call(prompt_strategic, max_tokens=2200), "§2.4 产品定位与策略")
+        llm_calls_used += 1
 
     # ===== 2. 综合评分（5 分制，6 个维度）=====
     print("   ⚡ 综合分析 2/8：综合评分（5 分制）...")
@@ -400,9 +414,13 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "| **综合平均** | **X.X / 5** | **1 句话综合判定** |\n\n"
         "不要前言、不要分析、只返回表格。"
     )
-    text2 = llm_call(prompt_scorecard, max_tokens=1500)
-    synthesis["scorecard"] = _wrap_llm_error(text2, "§1.4 综合评分")
-    llm_calls_used += 1
+    if _reusable(reuse.get("scorecard")):
+        synthesis["scorecard"] = reuse["scorecard"]
+        print("      ⏭️ 复用已有结果")
+    else:
+        synthesis["scorecard"] = _wrap_llm_error(
+            llm_call(prompt_scorecard, max_tokens=1500), "§1.4 综合评分")
+        llm_calls_used += 1
 
     # ===== 3. (REMOVED v1.9) Consolidated product-level risks =====
     # The "综合性产品级风险" synthesis has been removed by user request.
@@ -461,9 +479,13 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "1-2 句话总结：这个产品想让用户**感觉**它是什么？这套说法可信度如何？\n\n"
         "不要前言、不要「以下是分析」这种话，直接出内容。"
     )
-    text4 = llm_call(prompt_narrative, max_tokens=2000)
-    synthesis["narrative_summary"] = _wrap_llm_error(text4, "§3.1 官网叙事分析")
-    llm_calls_used += 1
+    if _reusable(reuse.get("narrative_summary")):
+        synthesis["narrative_summary"] = reuse["narrative_summary"]
+        print("      ⏭️ 复用已有结果")
+    else:
+        synthesis["narrative_summary"] = _wrap_llm_error(
+            llm_call(prompt_narrative, max_tokens=2000), "§3.1 官网叙事分析")
+        llm_calls_used += 1
 
     # ===== 5. Growth funnel inference (v1.6, v1.9 restricted to 官网 only) =====
     # v1.9 change: funnel analysis is now scoped to MARKETING-LAYER only:
@@ -547,9 +569,22 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "用 ✅ / ⚠️ / ❌ 列 3-5 条评价。\n\n"
         "不要前言。**严禁**引用 L 开头的测点或任何登录后的内容。"
     )
-    text5 = llm_call(prompt_growth, max_tokens=2400)
-    synthesis["growth_funnel"] = _wrap_llm_error(text5, "§5 从访客到注册的转化路径")
-    llm_calls_used += 1
+    if _reusable(reuse.get("growth_funnel")):
+        synthesis["growth_funnel"] = reuse["growth_funnel"]
+        print("      ⏭️ 复用已有结果")
+    elif not growth_text.strip():
+        # 空数据守卫：本次未抓到任何定价 / 注册 / 演示 / 背景页，无从推断转化路径。
+        # 直接写明确说明，不硬调 LLM（否则 LLM 拿到空数据会返回拒答 / 异常被判失败）。
+        print("      ⚠️ 无定价 / 注册 / 演示 / 背景页数据，跳过 LLM，写入说明")
+        synthesis["growth_funnel"] = (
+            "_本次在公开页面未找到定价页、注册页、预约演示或引导填表等转化相关页面，"
+            "无法据此推断「从访客到注册」的转化路径。该产品可能将注册 / 定价信息放在"
+            "登录后或邀请制入口内，未对未注册访客公开。_"
+        )
+    else:
+        synthesis["growth_funnel"] = _wrap_llm_error(
+            llm_call(prompt_growth, max_tokens=2400), "§5 从访客到注册的转化路径")
+        llm_calls_used += 1
 
     # ===== 6. Company basic info via web search (v1.8) =====
     # Pull factual context (founding / funding / team) from external sources
@@ -701,14 +736,18 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
     ).replace("{domain}", company_domain).replace("{company_domain}", company_domain)
     # Web search calls can take 60-240s — bump timeout + pre-approve WebSearch/WebFetch
     # so the headless `claude -p` doesn't get blocked on permission prompts.
-    text6 = llm_call(
-        prompt_company,
-        max_tokens=4000,
-        timeout=300,
-        allowed_tools=["WebSearch", "WebFetch"],
-    )
-    synthesis["company_info"] = _wrap_llm_error(text6, "§2.5 公司基本信息")
-    llm_calls_used += 1
+    if _reusable(reuse.get("company_info")):
+        synthesis["company_info"] = reuse["company_info"]
+        print("      ⏭️ 复用已有结果")
+    else:
+        text6 = llm_call(
+            prompt_company,
+            max_tokens=4000,
+            timeout=300,
+            allowed_tools=["WebSearch", "WebFetch"],
+        )
+        synthesis["company_info"] = _wrap_llm_error(text6, "§2.5 公司基本信息")
+        llm_calls_used += 1
 
     # ===== 7. Community feedback via web search (v1.15) =====
     # Pull NON-OFFICIAL third-party discussion (Reddit / Product Hunt /
@@ -801,14 +840,18 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "- 直接以章节标题（如 #### 4.1 / #### ⚠️ 未找到显著社区讨论）开头\n"
         "- 第一个字符必须是 markdown 标题符号 #、|、-、*，不能是英文/中文长句\n"
     )
-    text7 = llm_call(
-        prompt_community,
-        max_tokens=4500,
-        timeout=400,
-        allowed_tools=["WebSearch", "WebFetch"],
-    )
-    synthesis["community_feedback"] = _wrap_llm_error(text7, "§4 第三方社区反馈")
-    llm_calls_used += 1
+    if _reusable(reuse.get("community_feedback")):
+        synthesis["community_feedback"] = reuse["community_feedback"]
+        print("      ⏭️ 复用已有结果")
+    else:
+        text7 = llm_call(
+            prompt_community,
+            max_tokens=4500,
+            timeout=400,
+            allowed_tools=["WebSearch", "WebFetch"],
+        )
+        synthesis["community_feedback"] = _wrap_llm_error(text7, "§4 第三方社区反馈")
+        llm_calls_used += 1
 
     # ===== 8. Competitor discovery via web search (v1.18 / v1.19 三层) =====
     # NOT rendered into report.md/html — output goes ONLY to a standalone
@@ -894,14 +937,18 @@ def synthesis_pass(findings: list, workspace: Path, llm_calls_used: int,
         "- 如果产品不是多 agent / 没有具名职能 → 整个职能层 section 写 `### 不适用\\n\\n- （该产品无具名职能 agent）`\n"
         "- 如果产品没有行业垂直锚点 → 行业层 section 写 `- （该产品无行业垂直锚点 / 横向工具）`\n"
     )
-    text8 = llm_call(
-        prompt_competitors,
-        max_tokens=3000,
-        timeout=480,
-        allowed_tools=["WebSearch", "WebFetch"],
-    )
-    synthesis["competitors"] = _wrap_llm_error(text8, "§competitors.md 直接竞品")
-    llm_calls_used += 1
+    if _reusable(reuse.get("competitors")):
+        synthesis["competitors"] = reuse["competitors"]
+        print("      ⏭️ 复用已有结果")
+    else:
+        text8 = llm_call(
+            prompt_competitors,
+            max_tokens=3000,
+            timeout=480,
+            allowed_tools=["WebSearch", "WebFetch"],
+        )
+        synthesis["competitors"] = _wrap_llm_error(text8, "§competitors.md 直接竞品")
+        llm_calls_used += 1
 
     # Write standalone competitors.md (NOT included in report.md/html)
     competitors_md = (
